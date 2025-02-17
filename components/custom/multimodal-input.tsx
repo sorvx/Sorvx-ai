@@ -12,23 +12,23 @@ import React, {
   ChangeEvent,
 } from "react";
 import { toast } from "sonner";
+import TextareaAutosize from "react-textarea-autosize";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
 
 const suggestedActions = [
   {
     title: "What is The most popular Coding ",
     label: "Language For Making Apps?",
-    action: "What is the most popular coding languages for making apps?",
+    action: "What is the most popular coding language for making apps?",
   },
   {
     title: "What is pros of Ai",
     label: "in Our Life?",
-    action: "What is the pros of ai in our daily life?",
+    action: "What are the pros of AI in our daily life?",
   },
 ];
 
@@ -55,33 +55,12 @@ export function MultimodalInput({
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
+    event?: { preventDefault?: () => void },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      adjustHeight();
-    }
-  }, []);
-
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 0}px`;
-    }
-  };
-
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
-    adjustHeight();
-  };
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
@@ -109,18 +88,16 @@ export function MultimodalInput({
 
       if (response.ok) {
         const data = await response.json();
-        const { url, pathname, contentType } = data;
-
         return {
-          url,
-          name: pathname,
-          contentType: contentType,
+          url: data.url,
+          name: data.pathname,
+          contentType: data.contentType,
         };
       } else {
         const { error } = await response.json();
         toast.error(error);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload file, please try again!");
     }
   };
@@ -128,7 +105,6 @@ export function MultimodalInput({
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
-
       setUploadQueue(files.map((file) => file.name));
 
       try {
@@ -167,12 +143,9 @@ export function MultimodalInput({
                 className={index > 1 ? "hidden sm:block" : "block"}
               >
                 <button
-                  onClick={async () => {
-                    append({
-                      role: "user",
-                      content: suggestedAction.action,
-                    });
-                  }}
+                  onClick={() =>
+                    append({ role: "user", content: suggestedAction.action })
+                  }
                   className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
@@ -199,39 +172,30 @@ export function MultimodalInput({
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
-
           {uploadQueue.map((filename) => (
             <PreviewAttachment
               key={filename}
-              attachment={{
-                url: "",
-                name: filename,
-                contentType: "",
-              }}
+              attachment={{ url: "", name: filename, contentType: "" }}
               isUploading={true}
             />
           ))}
         </div>
       )}
 
-      <Textarea
+      {/* Textarea with Max Height and Character Limit */}
+      <TextareaAutosize
         ref={textareaRef}
         placeholder="Send a message..."
         value={input}
-        onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none"
-        rows={3}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-
-            if (isLoading) {
-              toast.error("Please wait for the model to finish its response!");
-            } else {
-              submitForm();
-            }
+        onChange={(event) => {
+          if (event.target.value.length <= 2000) {
+            setInput(event.target.value);
           }
         }}
+        className="min-h-[24px] max-h-[200px] overflow-y-auto resize-none rounded-lg text-base bg-muted border-none"
+        minRows={1}
+        maxRows={6}
+        maxLength={2000}
       />
 
       {isLoading ? (
