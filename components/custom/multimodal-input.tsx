@@ -192,8 +192,8 @@ export function MultimodalInput({
             setInput(event.target.value);
           }
         }}
-        className="min-h-[24px] max-h-[200px] overflow-y-auto resize-none rounded-lg text-base bg-muted border-none"
-        minRows={1}
+        className="min-h-[25px] max-h-[200px] overflow-y-auto resize-none rounded-lg text-base bg-muted border-none"
+        minRows={4}
         maxRows={6}
         maxLength={2000}
       />
