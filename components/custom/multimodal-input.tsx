@@ -12,23 +12,23 @@ import React, {
   ChangeEvent,
 } from "react";
 import { toast } from "sonner";
-import TextareaAutosize from "react-textarea-autosize";
-import { Textarea } from "../ui/textarea";
+
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 
 const suggestedActions = [
   {
-    title: "What is The most popular Coding ",
-    label: "Language For Making Apps?",
-    action: "What is the most popular coding language for making apps?",
+    title: "What is The most popular  ",
+    label: "Coding Languages For Making Apps?",
+    action: "What is the most popular coding languages for making apps?",
   },
   {
     title: "What is pros of Ai",
     label: "in Our Life?",
-    action: "What are the pros of AI in our daily life?",
+    action: "What is the pros of ai in our daily life?",
   },
 ];
 
@@ -61,6 +61,27 @@ export function MultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      adjustHeight();
+    }
+  }, []);
+
+  const adjustHeight = () => {
+    if (textareaRef.current) {
+      // Reset and set the height based on content.
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  // The missing handleInput function:
+  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(event.target.value);
+    adjustHeight();
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
@@ -88,16 +109,17 @@ export function MultimodalInput({
 
       if (response.ok) {
         const data = await response.json();
+        const { url, pathname, contentType } = data;
         return {
-          url: data.url,
-          name: data.pathname,
-          contentType: data.contentType,
+          url,
+          name: pathname,
+          contentType: contentType,
         };
       } else {
         const { error } = await response.json();
         toast.error(error);
       }
-    } catch {
+    } catch (error) {
       toast.error("Failed to upload file, please try again!");
     }
   };
@@ -111,7 +133,7 @@ export function MultimodalInput({
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined,
+          (attachment) => attachment !== undefined
         );
 
         setAttachments((currentAttachments) => [
@@ -124,7 +146,7 @@ export function MultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments]
   );
 
   return (
@@ -135,17 +157,20 @@ export function MultimodalInput({
           <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
             {suggestedActions.map((suggestedAction, index) => (
               <motion.div
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: 0.05 * index }}
-                key={index}
                 className={index > 1 ? "hidden sm:block" : "block"}
               >
                 <button
-                  onClick={() =>
-                    append({ role: "user", content: suggestedAction.action })
-                  }
+                  onClick={async () => {
+                    append({
+                      role: "user",
+                      content: suggestedAction.action,
+                    });
+                  }}
                   className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
@@ -175,28 +200,35 @@ export function MultimodalInput({
           {uploadQueue.map((filename) => (
             <PreviewAttachment
               key={filename}
-              attachment={{ url: "", name: filename, contentType: "" }}
+              attachment={{
+                url: "",
+                name: filename,
+                contentType: "",
+              }}
               isUploading={true}
             />
           ))}
         </div>
       )}
 
-      {/* Textarea with Max Height and Character Limit */}
       <Textarea
-  ref={textareaRef}
-  placeholder="Send a message..."
-  value={input}
-  onChange={handleInput}
-  className="min-h-[40px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2"
-  rows={1} // Start small, expand dynamically
-  onKeyDown={(event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      if (!isLoading) submitForm();
-    }
-  }}
-/>
+        ref={textareaRef}
+        placeholder="Send a message..."
+        value={input}
+        onChange={handleInput}
+        className="min-h-[40px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2"
+        rows={1} // Start small, expand dynamically
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            if (isLoading) {
+              toast.error("Please wait for the model to finish its response!");
+            } else {
+              submitForm();
+            }
+          }
+        }}
+      />
 
       {isLoading ? (
         <Button
