@@ -183,20 +183,20 @@ export function MultimodalInput({
       )}
 
       {/* Textarea with Max Height and Character Limit */}
-      <TextareaAutosize
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={(event) => {
-          if (event.target.value.length <= 2000) {
-            setInput(event.target.value);
-          }
-        }}
-        className="min-h-[25px] max-h-[200px] overflow-y-auto resize-none rounded-lg text-base bg-muted border-none"
-        minRows={4}
-        maxRows={6}
-        maxLength={2000}
-      />
+      <Textarea
+  ref={textareaRef}
+  placeholder="Send a message..."
+  value={input}
+  onChange={handleInput}
+  className="min-h-[40px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2"
+  rows={1} // Start small, expand dynamically
+  onKeyDown={(event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (!isLoading) submitForm();
+    }
+  }}
+/>
 
       {isLoading ? (
         <Button
