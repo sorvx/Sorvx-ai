@@ -13,7 +13,7 @@ import React, {
 } from "react";
 import { toast } from "sonner";
 import TextareaAutosize from "react-textarea-autosize";
-
+import { Textarea } from "../ui/textarea";
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
