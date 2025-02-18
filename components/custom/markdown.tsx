@@ -16,7 +16,6 @@ const CodeBlock = ({
   const copyToClipboard = () => {
     const codeText = Array.isArray(children) ? children.join("") : children;
 
-    // Use the Clipboard API if available and in a secure context.
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard
         .writeText(codeText)
@@ -29,16 +28,13 @@ const CodeBlock = ({
           fallbackCopyText(codeText);
         });
     } else {
-      // Fallback for mobile or insecure contexts.
       fallbackCopyText(codeText);
     }
   };
 
-  // Fallback copy method using document.execCommand
   const fallbackCopyText = (text: string) => {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    // Avoid scrolling to bottom
     textArea.style.top = "0";
     textArea.style.left = "0";
     textArea.style.position = "fixed";
@@ -73,7 +69,6 @@ const CodeBlock = ({
 
   return (
     <div className="my-4 border rounded-lg overflow-hidden shadow">
-      {/* Header bar mimicking VS Code window controls */}
       <div className="flex items-center px-3 py-2 bg-gray-200 dark:bg-gray-800">
         <span className="w-3 h-3 bg-red-500 rounded-full mr-1"></span>
         <span className="w-3 h-3 bg-yellow-500 rounded-full mr-1"></span>
@@ -86,7 +81,6 @@ const CodeBlock = ({
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      {/* Code content */}
       <pre
         {...props}
         className="overflow-x-auto p-3 bg-gray-50 dark:bg-gray-900 text-sm font-mono"
@@ -105,20 +99,20 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         {children}
       </ol>
     ),
+    ul: ({ node, children, ...props }: any) => (
+      <ul className="list-disc list-outside ml-4" {...props}>
+        {children}
+      </ul>
+    ),
     li: ({ node, children, ...props }: any) => (
       <li className="py-1" {...props}>
         {children}
       </li>
     ),
-    ul: ({ node, children, ...props }: any) => (
-      <ul className="list-decimal list-outside ml-4" {...props}>
-        {children}
-      </ul>
-    ),
     strong: ({ node, children, ...props }: any) => (
-      <span className="font-semibold" {...props}>
+      <strong className="font-bold" {...props}>
         {children}
-      </span>
+      </strong>
     ),
     a: ({ node, children, ...props }: any) => (
       <Link
@@ -130,6 +124,48 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         {children}
       </Link>
     ),
+    blockquote: ({ node, children, ...props }: any) => (
+      <blockquote
+        className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 my-4"
+        {...props}
+      >
+        {children}
+      </blockquote>
+    ),
+    table: ({ node, children, ...props }: any) => (
+      <table className="min-w-full border-collapse my-4" {...props}>
+        {children}
+      </table>
+    ),
+    thead: ({ node, children, ...props }: any) => (
+      <thead className="bg-gray-100 dark:bg-gray-700" {...props}>
+        {children}
+      </thead>
+    ),
+    tbody: ({ node, children, ...props }: any) => (
+      <tbody className="bg-white dark:bg-gray-800" {...props}>
+        {children}
+      </tbody>
+    ),
+    tr: ({ node, children, ...props }: any) => (
+      <tr className="border-b border-gray-200 dark:border-gray-700" {...props}>
+        {children}
+      </tr>
+    ),
+    th: ({ node, children, ...props }: any) => (
+      <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300" {...props}>
+        {children}
+      </th>
+    ),
+    td: ({ node, children, ...props }: any) => (
+      <td className="px-4 py-2 text-gray-600 dark:text-gray-300" {...props}>
+        {children}
+      </td>
+    ),
+    hr: ({ node, ...props }: any) => (
+      <hr className="my-4 border-gray-300 dark:border-gray-600" {...props} />
+    ),
+    // Optionally, add more custom renderers as needed.
   };
 
   return (
