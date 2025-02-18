@@ -16,23 +16,31 @@ import { FlightStatus } from "../flights/flight-status";
 import { ListFlights } from "../flights/list-flights";
 import { SelectSeats } from "../flights/select-seats";
 import { VerifyPayment } from "../flights/verify-payment";
+import { TypingDots } from "./typing-dots";
+import { TypingEffect } from "./typing-effect";
 
 interface MessageProps {
   chatId: string;
+  messageId?: string;
   role: string;
   content: string | ReactNode;
   toolInvocations?: Array<ToolInvocation>;
   attachments?: Array<Attachment>;
   isFirstMessage?: boolean;
+  isLoading?: boolean;
+  isStreaming?: boolean;
 }
 
 export const Message = ({
   chatId,
+  messageId = '',
   role,
   content,
   toolInvocations,
   attachments,
   isFirstMessage = false,
+  isLoading = false,
+  isStreaming = false,
 }: MessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
@@ -99,88 +107,102 @@ export const Message = ({
         )}
 
         {/* Message content */}
-        <div className={`${
-          isUser 
-            ? 'text-[13px] leading-[1.4] text-white/95 font-medium' 
-            : 'text-[14px] leading-relaxed text-zinc-800 dark:text-zinc-100 pr-12'
-        }`}>
-          {content && typeof content === "string" ? (
-            isUser ? (
-              <div className="break-words">{content}</div>
-            ) : (
-              <div className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:my-0 prose-p:text-zinc-800 dark:prose-p:text-zinc-100">
-                <Markdown>{content}</Markdown>
+        {isLoading ? (
+          <div className="flex flex-col gap-2">
+            <TypingDots />
+          </div>
+        ) : (
+          <>
+            <div className={`${
+              isUser 
+                ? 'text-[13px] leading-[1.4] text-white/95 font-medium' 
+                : 'text-[14px] leading-relaxed text-zinc-800 dark:text-zinc-100 pr-12'
+            }`}>
+              {content && typeof content === "string" ? (
+                isUser ? (
+                  <div className="break-words">{content}</div>
+                ) : (
+                  <div className="text-[14px] leading-relaxed text-zinc-800 dark:text-zinc-100 pr-12">
+                    <TypingEffect 
+                      text={content}
+                      messageId={messageId}
+                      chatId={chatId}
+                      speed={25}
+                      isStreaming={isStreaming}
+                    />
+                  </div>
+                )
+              ) : (
+                <div>{content}</div>
+              )}
+            </div>
+
+            {/* Tool invocations */}
+            {toolInvocations && toolInvocations.length > 0 && (
+              <div className="flex flex-col gap-4 overflow-x-auto thin-scrollbar">
+                {toolInvocations.map((toolInvocation) => {
+                  const { toolName, toolCallId, state } = toolInvocation;
+                  if (state === "result") {
+                    const { result } = toolInvocation;
+                    return (
+                      <div key={toolCallId}>
+                        {toolName === "getWeather" ? (
+                          <Weather weatherAtLocation={result} />
+                        ) : toolName === "displayFlightStatus" ? (
+                          <FlightStatus flightStatus={result} />
+                        ) : toolName === "searchFlights" ? (
+                          <ListFlights chatId={chatId} results={result} />
+                        ) : toolName === "selectSeats" ? (
+                          <SelectSeats chatId={chatId} availability={result} />
+                        ) : toolName === "createReservation" ? (
+                          Object.keys(result).includes("error") ? null : (
+                            <CreateReservation reservation={result} />
+                          )
+                        ) : toolName === "authorizePayment" ? (
+                          <AuthorizePayment intent={result} />
+                        ) : toolName === "displayBoardingPass" ? (
+                          <DisplayBoardingPass boardingPass={result} />
+                        ) : toolName === "verifyPayment" ? (
+                          <VerifyPayment result={result} />
+                        ) : (
+                          <div>{JSON.stringify(result, null, 2)}</div>
+                        )}
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={toolCallId} className="skeleton">
+                        {toolName === "getWeather" ? (
+                          <Weather />
+                        ) : toolName === "displayFlightStatus" ? (
+                          <FlightStatus />
+                        ) : toolName === "searchFlights" ? (
+                          <ListFlights chatId={chatId} />
+                        ) : toolName === "selectSeats" ? (
+                          <SelectSeats chatId={chatId} />
+                        ) : toolName === "createReservation" ? (
+                          <CreateReservation />
+                        ) : toolName === "authorizePayment" ? (
+                          <AuthorizePayment />
+                        ) : toolName === "displayBoardingPass" ? (
+                          <DisplayBoardingPass />
+                        ) : null}
+                      </div>
+                    );
+                  }
+                })}
               </div>
-            )
-          ) : (
-            <div>{content}</div>
-          )}
-        </div>
+            )}
 
-        {/* Tool invocations */}
-        {toolInvocations && toolInvocations.length > 0 && (
-          <div className="flex flex-col gap-4 overflow-x-auto thin-scrollbar">
-            {toolInvocations.map((toolInvocation) => {
-              const { toolName, toolCallId, state } = toolInvocation;
-              if (state === "result") {
-                const { result } = toolInvocation;
-                return (
-                  <div key={toolCallId}>
-                    {toolName === "getWeather" ? (
-                      <Weather weatherAtLocation={result} />
-                    ) : toolName === "displayFlightStatus" ? (
-                      <FlightStatus flightStatus={result} />
-                    ) : toolName === "searchFlights" ? (
-                      <ListFlights chatId={chatId} results={result} />
-                    ) : toolName === "selectSeats" ? (
-                      <SelectSeats chatId={chatId} availability={result} />
-                    ) : toolName === "createReservation" ? (
-                      Object.keys(result).includes("error") ? null : (
-                        <CreateReservation reservation={result} />
-                      )
-                    ) : toolName === "authorizePayment" ? (
-                      <AuthorizePayment intent={result} />
-                    ) : toolName === "displayBoardingPass" ? (
-                      <DisplayBoardingPass boardingPass={result} />
-                    ) : toolName === "verifyPayment" ? (
-                      <VerifyPayment result={result} />
-                    ) : (
-                      <div>{JSON.stringify(result, null, 2)}</div>
-                    )}
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={toolCallId} className="skeleton">
-                    {toolName === "getWeather" ? (
-                      <Weather />
-                    ) : toolName === "displayFlightStatus" ? (
-                      <FlightStatus />
-                    ) : toolName === "searchFlights" ? (
-                      <ListFlights chatId={chatId} />
-                    ) : toolName === "selectSeats" ? (
-                      <SelectSeats chatId={chatId} />
-                    ) : toolName === "createReservation" ? (
-                      <CreateReservation />
-                    ) : toolName === "authorizePayment" ? (
-                      <AuthorizePayment />
-                    ) : toolName === "displayBoardingPass" ? (
-                      <DisplayBoardingPass />
-                    ) : null}
-                  </div>
-                );
-              }
-            })}
-          </div>
-        )}
-
-        {/* Attachments */}
-        {attachments && attachments.length > 0 && (
-          <div className="flex flex-row gap-2 overflow-x-auto thin-scrollbar">
-            {attachments.map((attachment) => (
-              <PreviewAttachment key={attachment.url} attachment={attachment} />
-            ))}
-          </div>
+            {/* Attachments */}
+            {attachments && attachments.length > 0 && (
+              <div className="flex flex-row gap-2 overflow-x-auto thin-scrollbar">
+                {attachments.map((attachment) => (
+                  <PreviewAttachment key={attachment.url} attachment={attachment} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </motion.div>

@@ -2,7 +2,7 @@
 
 import { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Message as PreviewMessage } from "@/components/custom/message";
 import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
@@ -33,6 +33,27 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
+  // Track if we're showing the typing effect for the last message
+  const [isTypingLastMessage, setIsTypingLastMessage] = useState(false);
+
+  // Track the last message being streamed
+  const lastMessageRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (isLoading) {
+      setIsTypingLastMessage(true);
+      if (messages.length > 0) {
+        lastMessageRef.current = messages[messages.length - 1].id;
+      }
+    } else {
+      const timer = setTimeout(() => {
+        setIsTypingLastMessage(false);
+        lastMessageRef.current = null;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, messages]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Main Container */}
@@ -45,16 +66,33 @@ export function Chat({
           >
             {messages.length === 0 && <Overview />}
 
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <PreviewMessage
                 key={message.id}
                 chatId={id}
+                messageId={message.id}
                 role={message.role}
                 content={message.content}
                 attachments={message.experimental_attachments}
                 toolInvocations={message.toolInvocations}
+                isLoading={
+                  index === messages.length - 1 && 
+                  (isLoading || isTypingLastMessage) && 
+                  message.role === "assistant"
+                }
+                isStreaming={message.id === lastMessageRef.current}
               />
             ))}
+
+            {/* Show typing indicator for new messages */}
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
+              <PreviewMessage
+                chatId={id}
+                role="assistant"
+                content=""
+                isLoading={true}
+              />
+            )}
 
             <div ref={messagesEndRef} className="shrink-0 min-h-[24px]" />
           </div>
