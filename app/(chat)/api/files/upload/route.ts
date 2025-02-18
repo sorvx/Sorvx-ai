@@ -1,8 +1,9 @@
-import { put } from "@vercel/blob";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
+import { r2, r2Config } from "@/lib/r2";
 
 const FileSchema = z.object({
   file: z
@@ -26,10 +27,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (request.body === null) {
-    return new Response("Request body is empty", { status: 400 });
-  }
-
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -48,19 +45,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    const filename = file.name;
-    const fileBuffer = await file.arrayBuffer();
+    // Generate a unique filename
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const extension = file.name.split(".").pop();
+    const filename = `${timestamp}-${randomString}.${extension}`;
 
+    // Convert file to buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to R2
     try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
+      await r2.send(
+        new PutObjectCommand({
+          Bucket: r2Config.bucketName,
+          Key: filename,
+          Body: buffer,
+          ContentType: file.type,
+          ACL: "public-read",
+        })
+      );
 
-      return NextResponse.json(data);
+      // Return the public URL and include contentType
+      const url = `${r2Config.publicUrl}/${filename}`;
+      
+      return NextResponse.json({
+        url,
+        name: file.name,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
+        contentType: file.type,
+      });
     } catch (error) {
+      console.error("R2 upload failed:", error);
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
   } catch (error) {
+    console.error("Request processing failed:", error);
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 },

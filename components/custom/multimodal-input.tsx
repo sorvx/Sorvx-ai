@@ -97,30 +97,36 @@ export function MultimodalInput({
     }
   }, [attachments, handleSubmit, setAttachments, width]);
 
-  const uploadFile = async (file: File) => {
+  const handleFileUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch(`/api/files/upload`, {
+      const response = await fetch("/api/files/upload", {
         method: "POST",
         body: formData,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
-        return {
-          url,
-          name: pathname,
-          contentType: contentType,
-        };
-      } else {
-        const { error } = await response.json();
-        toast.error(error);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
       }
+
+      const data = await response.json();
+      
+      // Add the uploaded file to attachments with explicit contentType
+      setAttachments((prev) => [
+        ...prev,
+        {
+          name: data.name,
+          url: data.url,
+          size: data.size,
+          uploadedAt: data.uploadedAt,
+          contentType: file.type, // Explicitly set the content type
+        },
+      ]);
     } catch (error) {
-      toast.error("Failed to upload file, please try again!");
+      toast.error(error instanceof Error ? error.message : "Upload failed");
     }
   };
 
@@ -130,16 +136,8 @@ export function MultimodalInput({
       setUploadQueue(files.map((file) => file.name));
 
       try {
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined
-        );
-
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
+        const uploadPromises = files.map((file) => handleFileUpload(file));
+        await Promise.all(uploadPromises);
       } catch (error) {
         console.error("Error uploading files!", error);
       } finally {
