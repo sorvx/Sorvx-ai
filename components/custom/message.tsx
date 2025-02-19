@@ -33,7 +33,7 @@ interface MessageProps {
 
 export const Message = ({
   chatId,
-  messageId = '',
+  messageId = "",
   role,
   content,
   toolInvocations,
@@ -75,18 +75,23 @@ export const Message = ({
         }`}
       >
         {isUser ? (
-  <UserIcon />
-) : (
-  <Image src="/images/ai.png" height={28} width={28} alt="Chatbot Avatar" />
-)}
+          <UserIcon /* Make sure UserIcon supports className if needed */ />
+        ) : (
+          <Image
+            src="/images/ai.png"
+            height={28}
+            width={28}
+            alt="Chatbot Avatar"
+          />
+        )}
       </div>
 
       {/* Message container */}
       <div
-        className={`relative flex flex-col gap-2 transition-all duration-200 ${
+        className={`relative flex flex-col gap-2 transition-all duration-200 break-words w-full ${
           isUser
-            ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white py-3 px-5 rounded-lg max-w-[70%] self-end cursor-pointer transform hover:scale-105 shadow-lg"
-            : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-5 rounded-lg max-w-[70%] group shadow-lg"
+            ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white py-3 px-4 rounded-t-2xl rounded-bl-2xl rounded-br-md self-end cursor-pointer hover:shadow-lg hover:from-purple-500 hover:to-purple-600"
+            : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-zinc-800 dark:text-zinc-100 p-4 rounded-t-2xl rounded-br-2xl rounded-bl-md group"
         }`}
       >
         {/* Copy button for bot messages */}
@@ -94,17 +99,15 @@ export const Message = ({
           <button
             onClick={handleCopy}
             tabIndex={-1}
-            className="absolute right-3 top-3 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none"
+            className="absolute right-2 top-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none"
             aria-label={copied ? "Copied!" : "Copy message"}
           >
             {copied ? (
-              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+              <div className="text-xs text-green-600 dark:text-green-400 font-medium">
                 Copied!
-              </span>
+              </div>
             ) : (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Copy
-              </span>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Copy</div>
             )}
           </button>
         )}
@@ -119,7 +122,7 @@ export const Message = ({
             <div
               className={`${
                 isUser
-                  ? "text-sm font-medium break-words"
+                  ? "text-sm font-medium"
                   : "text-base leading-relaxed pr-12"
               }`}
             >
