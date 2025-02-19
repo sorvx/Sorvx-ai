@@ -88,7 +88,7 @@ export const Message = ({
 
       {/* Message container */}
       <div
-        className={`relative flex flex-col gap-2 transition-all duration-200 break-words w-full ${
+        className={`relative flex flex-col gap-2 transition-all duration-200 break-words max-w-[75%]  break-words ${
           isUser
             ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white py-3 px-4 rounded-t-2xl rounded-bl-2xl rounded-br-md self-end cursor-pointer hover:shadow-lg hover:from-purple-500 hover:to-purple-600"
             : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-zinc-800 dark:text-zinc-100 p-4 rounded-t-2xl rounded-br-2xl rounded-bl-md group"
