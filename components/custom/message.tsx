@@ -75,15 +75,10 @@ export const Message = ({
         }`}
       >
         {isUser ? (
-          <UserIcon className="w-full h-full" />
-        ) : (
-          <Image
-            src="/images/ai.png"
-            height={28}
-            width={28}
-            alt="Chatbot Avatar"
-          />
-        )}
+  <UserIcon />
+) : (
+  <Image src="/images/ai.png" height={28} width={28} alt="Chatbot Avatar" />
+)}
       </div>
 
       {/* Message container */}
