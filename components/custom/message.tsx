@@ -46,15 +46,12 @@ export const Message = ({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (e: React.MouseEvent) => {
-    // Prevent all default behaviors and propagation
     e.stopPropagation();
     e.preventDefault();
-    
+
     if (typeof content === "string") {
-      // Copy text without focusing the button
       navigator.clipboard.writeText(content).then(() => {
         setCopied(true);
-        // Blur any focused element
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
         }
@@ -72,13 +69,20 @@ export const Message = ({
       animate={{ y: 0, opacity: 1 }}
     >
       {/* Avatar */}
-      <div className={`w-[24px] border rounded-sm p-1 flex justify-center items-center shrink-0 text-zinc-500 dark:text-zinc-400 ${
-        isUser ? 'order-last ml-2' : 'order-first mr-2'
-      }`}>
+      <div
+        className={`w-[32px] h-[32px] border rounded-full p-1 flex justify-center items-center shrink-0 text-zinc-500 dark:text-zinc-400 ${
+          isUser ? "order-last ml-2" : "order-first mr-2"
+        }`}
+      >
         {isUser ? (
-          <UserIcon />
+          <UserIcon className="w-full h-full" />
         ) : (
-          <Image src="/images/ai.png" height={20} width={20} alt="sorvx logo" />
+          <Image
+            src="/images/ai.png"
+            height={28}
+            width={28}
+            alt="Chatbot Avatar"
+          />
         )}
       </div>
 
@@ -86,22 +90,26 @@ export const Message = ({
       <div
         className={`relative flex flex-col gap-2 transition-all duration-200 ${
           isUser
-            ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white py-2.5 px-4 rounded-t-2xl rounded-bl-2xl rounded-br-md max-w-[200px] self-end cursor-pointer hover:shadow-lg hover:from-purple-500 hover:to-purple-600"
-            : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-zinc-800 dark:text-zinc-100 p-4 rounded-t-2xl rounded-br-2xl rounded-bl-md max-w-[85%] group"
+            ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white py-3 px-5 rounded-lg max-w-[70%] self-end cursor-pointer transform hover:scale-105 shadow-lg"
+            : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-5 rounded-lg max-w-[70%] group shadow-lg"
         }`}
       >
         {/* Copy button for bot messages */}
         {!isUser && (
           <button
             onClick={handleCopy}
-            tabIndex={-1} // Prevent button from receiving focus
-            className="absolute right-2 top-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none"
+            tabIndex={-1}
+            className="absolute right-3 top-3 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none"
             aria-label={copied ? "Copied!" : "Copy message"}
           >
             {copied ? (
-              <div className="text-xs text-green-600 dark:text-green-400 font-medium">Copied!</div>
+              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                Copied!
+              </span>
             ) : (
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">Copy</div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Copy
+              </span>
             )}
           </button>
         )}
@@ -113,24 +121,24 @@ export const Message = ({
           </div>
         ) : (
           <>
-            <div className={`${
-              isUser 
-                ? 'text-[13px] leading-[1.4] text-white/95 font-medium' 
-                : 'text-[14px] leading-relaxed text-zinc-800 dark:text-zinc-100 pr-12'
-            }`}>
+            <div
+              className={`${
+                isUser
+                  ? "text-sm font-medium break-words"
+                  : "text-base leading-relaxed pr-12"
+              }`}
+            >
               {content && typeof content === "string" ? (
                 isUser ? (
-                  <div className="break-words">{content}</div>
+                  <div>{content}</div>
                 ) : (
-                  <div className="text-[14px] leading-relaxed text-zinc-800 dark:text-zinc-100 pr-12">
-                    <TypingEffect 
-                      text={content}
-                      messageId={messageId}
-                      chatId={chatId}
-                      speed={25}
-                      isStreaming={isStreaming}
-                    />
-                  </div>
+                  <TypingEffect
+                    text={content}
+                    messageId={messageId}
+                    chatId={chatId}
+                    speed={25}
+                    isStreaming={isStreaming}
+                  />
                 )
               ) : (
                 <div>{content}</div>
@@ -165,7 +173,9 @@ export const Message = ({
                         ) : toolName === "verifyPayment" ? (
                           <VerifyPayment result={result} />
                         ) : (
-                          <div>{JSON.stringify(result, null, 2)}</div>
+                          <pre className="whitespace-pre-wrap text-xs">
+                            {JSON.stringify(result, null, 2)}
+                          </pre>
                         )}
                       </div>
                     );
@@ -196,9 +206,12 @@ export const Message = ({
 
             {/* Attachments */}
             {attachments && attachments.length > 0 && (
-              <div className="flex flex-row gap-2 overflow-x-auto thin-scrollbar">
+              <div className="flex flex-row gap-2 overflow-x-auto thin-scrollbar mt-2">
                 {attachments.map((attachment) => (
-                  <PreviewAttachment key={attachment.url} attachment={attachment} />
+                  <PreviewAttachment
+                    key={attachment.url}
+                    attachment={attachment}
+                  />
                 ))}
               </div>
             )}
