@@ -8,7 +8,7 @@ import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
 
-// Extend the AIMessage type to include our custom property.
+// Extend the AIMessage type to include a custom 'completed' property.
 interface ExtendedMessage extends AIMessage {
   completed?: boolean;
 }
@@ -22,7 +22,7 @@ export function Chat({
   id: string;
   initialMessages: Array<AIMessage>;
 }) {
-  // Load persisted messages (with 'completed') on mount.
+  // Load persisted messages (with the 'completed' property) on mount.
   const [persistedMessages, setPersistedMessages] = useState<Array<ExtendedMessage>>([]);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export function Chat({
     }
   }, []);
 
-  // Use persisted messages if available; otherwise, use initialMessages.
+  // Use persisted messages if available; otherwise, use the provided initialMessages.
   const {
     messages,
     handleSubmit,
@@ -92,24 +92,27 @@ export function Chat({
             className="flex flex-col gap-2 w-full grow overflow-y-auto"
           >
             {messages.length === 0 && <Overview />}
-            {messages.map((message, index) => (
-              <PreviewMessage
-                key={message.id}
-                chatId={id}
-                messageId={message.id}
-                role={message.role}
-                content={message.content}
-                attachments={message.experimental_attachments}
-                toolInvocations={message.toolInvocations}
-                isLoading={
-                  index === messages.length - 1 &&
-                  (isLoading || isTypingLastMessage) &&
-                  message.role === "assistant"
-                }
-                isStreaming={message.id === lastMessageRef.current}
-                completed={message.completed || false}
-              />
-            ))}
+            {messages.map((message, index) => {
+              const extMessage = message as ExtendedMessage;
+              return (
+                <PreviewMessage
+                  key={message.id}
+                  chatId={id}
+                  messageId={message.id}
+                  role={message.role}
+                  content={message.content}
+                  attachments={message.experimental_attachments}
+                  toolInvocations={message.toolInvocations}
+                  isLoading={
+                    index === messages.length - 1 &&
+                    (isLoading || isTypingLastMessage) &&
+                    message.role === "assistant"
+                  }
+                  isStreaming={message.id === lastMessageRef.current}
+                  completed={extMessage.completed || false}
+                />
+              );
+            })}
 
             {/* Show typing indicator for new messages from user */}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
