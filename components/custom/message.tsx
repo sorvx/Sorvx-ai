@@ -58,6 +58,7 @@ export const Message = ({
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
+      {/* Avatar */}
       <div
         className={`w-[32px] h-[32px] border rounded-full p-1 flex justify-center items-center shrink-0 text-zinc-500 dark:text-zinc-400 ${
           isUser ? "order-last ml-2" : "order-first mr-2"
@@ -75,11 +76,12 @@ export const Message = ({
         )}
       </div>
 
+      {/* Message container */}
       <div
         className={`relative flex flex-col gap-2 transition-all duration-200 break-words max-w-[75%] ${
           isUser
             ? "bg-purple-700 text-white py-3 px-4 rounded-t-2xl rounded-bl-2xl rounded-br-md self-end hover:bg-purple-600"
-            : "bg-gray-100 dark:bg-gray-800 p-4 rounded-xl shadow-lg group"
+            : "bg-white/30 dark:bg-gray-900/30 p-4 rounded-xl shadow-lg group backdrop-blur-sm"
         }`}
       >
         {isLoading ? (
@@ -126,29 +128,48 @@ export const Message = ({
             {attachments && attachments.length > 0 && (
               <div className="flex flex-row gap-2 overflow-x-auto mt-2">
                 {attachments.map((attachment) => (
-                  <PreviewAttachment key={attachment.url} attachment={attachment} />
+                  <PreviewAttachment
+                    key={attachment.url}
+                    attachment={attachment}
+                  />
                 ))}
               </div>
             )}
 
-            <div className="absolute bottom-2 right-2 flex items-center">
-              <button
-                onClick={handleCopy}
-                className="p-1 rounded-md hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none"
-                aria-label={copied ? "Copied!" : "Copy message"}
-              >
-                {copied ? (
-                  <span className="text-xs text-green-500 font-medium">
-                    Copied!
-                  </span>
-                ) : (
-                  <ClipboardCopy
-                    size={16}
-                    className="text-gray-500 dark:text-gray-400"
-                  />
-                )}
-              </button>
-            </div>
+            {/* Advanced copy button for chatbot messages only */}
+            {!isUser && (
+              <div className="absolute bottom-2 right-2 flex items-center">
+                <motion.button
+                  onClick={handleCopy}
+                  title="Copy message"
+                  aria-label={copied ? "Copied!" : "Copy message"}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative p-1 rounded-md hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none transition-transform duration-200"
+                >
+                  {/* Icon fades out when copied */}
+                  <motion.div
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: copied ? 0 : 1 }}
+                  >
+                    <ClipboardCopy
+                      size={16}
+                      className="text-gray-500 dark:text-gray-400"
+                    />
+                  </motion.div>
+                  {/* "Copied!" text fades in over the icon */}
+                  {copied && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 flex items-center justify-center text-xs text-green-500 font-medium"
+                    >
+                      Copied!
+                    </motion.span>
+                  )}
+                </motion.button>
+              </div>
+            )}
           </>
         )}
       </div>
