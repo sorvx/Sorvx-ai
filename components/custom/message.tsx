@@ -20,7 +20,7 @@ interface MessageProps {
   isFirstMessage?: boolean;
   isLoading?: boolean;
   isStreaming?: boolean;
-  completed?: boolean; // New: marks that the typing animation is done
+  completed?: boolean;
 }
 
 export const Message = ({
@@ -100,18 +100,24 @@ export const Message = ({
               {typeof content === "string" ? (
                 isUser ? (
                   <div>{content}</div>
-                ) : completed ? (
-                  // Already completed messages render static content
-                  <div>{content}</div>
                 ) : (
-                  // New messages animate with typing effect
-                  <TypingEffect
-                    text={content}
-                    messageId={messageId}
-                    chatId={chatId}
-                    speed={25}
-                    isStreaming={isStreaming}
-                  />
+                  // Wrap the assistant content in a container with a fixed min-height
+                  <div
+                    className="relative"
+                    style={{ minHeight: "3rem", willChange: "transform" }}
+                  >
+                    {completed ? (
+                      <div>{content}</div>
+                    ) : (
+                      <TypingEffect
+                        text={content}
+                        messageId={messageId}
+                        chatId={chatId}
+                        speed={25}
+                        isStreaming={isStreaming}
+                      />
+                    )}
+                  </div>
                 )
               ) : (
                 <div>{content}</div>
@@ -136,10 +142,7 @@ export const Message = ({
             {attachments && attachments.length > 0 && (
               <div className="flex flex-row gap-2 overflow-x-auto mt-2">
                 {attachments.map((attachment) => (
-                  <PreviewAttachment
-                    key={attachment.url}
-                    attachment={attachment}
-                  />
+                  <PreviewAttachment key={attachment.url} attachment={attachment} />
                 ))}
               </div>
             )}
@@ -154,7 +157,6 @@ export const Message = ({
                   whileTap={{ scale: 0.9 }}
                   className="relative p-1 rounded-md hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none transition-transform duration-200"
                 >
-                  {/* Icon fades out when copied */}
                   <motion.div
                     initial={{ opacity: 1 }}
                     animate={{ opacity: copied ? 0 : 1 }}
@@ -164,7 +166,6 @@ export const Message = ({
                       className="text-gray-500 dark:text-gray-400"
                     />
                   </motion.div>
-                  {/* "Copied!" text fades in over the icon */}
                   {copied && (
                     <motion.span
                       initial={{ opacity: 0, scale: 0.8 }}
