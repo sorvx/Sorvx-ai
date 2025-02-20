@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { Attachment, ToolInvocation } from "ai";
+import { Attachment } from "ai";
 import { motion } from "framer-motion";
 import { ReactNode, useState } from "react";
 import { UserIcon } from "./icons";
-import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 import { TypingDots } from "./typing-dots";
 import { TypingEffect } from "./typing-effect";
@@ -35,14 +34,17 @@ export const Message = ({
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (typeof content === "string") {
-      navigator.clipboard.writeText(content).then(() => {
+      try {
+        await navigator.clipboard.writeText(content);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      });
+      } catch (error) {
+        console.error("Copy failed", error);
+      }
     }
   };
 
@@ -55,11 +57,7 @@ export const Message = ({
       animate={{ y: 0, opacity: 1 }}
     >
       <div className={`w-[32px] h-[32px] border rounded-full p-1 flex justify-center items-center shrink-0 text-zinc-500 dark:text-zinc-400 ${isUser ? "order-last ml-2" : "order-first mr-2"}`}>
-        {isUser ? (
-          <UserIcon />
-        ) : (
-          <Image src="/images/ai.png" height={28} width={28} alt="Chatbot Avatar" />
-        )}
+        {isUser ? <UserIcon /> : <Image src="/images/ai.png" height={28} width={28} alt="Chatbot Avatar" />}
       </div>
 
       <div className={`relative flex flex-col gap-2 transition-all duration-200 break-words max-w-[75%] ${isUser ? "bg-purple-700 text-white py-3 px-4 rounded-t-2xl rounded-bl-2xl rounded-br-md self-end hover:bg-purple-600" : "bg-gray-100 dark:bg-gray-800 p-4 rounded-xl shadow-lg group"}`}>
@@ -83,17 +81,15 @@ export const Message = ({
               </div>
             )}
 
-            {!isUser && (
-              <div className="absolute bottom-2 right-2 flex items-center">
-                <button onClick={handleCopy} className="p-1 rounded-md hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none" aria-label={copied ? "Copied!" : "Copy message"}>
-                  {copied ? (
-                    <span className="text-xs text-green-500 font-medium">Copied!</span>
-                  ) : (
-                    <ClipboardCopy size={16} className="text-gray-500 dark:text-gray-400" />
-                  )}
-                </button>
-              </div>
-            )}
+            <div className="absolute bottom-2 right-2 flex items-center">
+              <button onClick={handleCopy} className="p-1 rounded-md hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none" aria-label={copied ? "Copied!" : "Copy message"}>
+                {copied ? (
+                  <span className="text-xs text-green-500 font-medium">Copied!</span>
+                ) : (
+                  <ClipboardCopy size={16} className="text-gray-500 dark:text-gray-400" />
+                )}
+              </button>
+            </div>
           </>
         )}
       </div>
