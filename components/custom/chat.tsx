@@ -8,6 +8,11 @@ import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
 
+// Extend the AIMessage type to include our custom property.
+interface ExtendedMessage extends AIMessage {
+  completed?: boolean;
+}
+
 const LOCAL_STORAGE_KEY = "chat_messages";
 
 export function Chat({
@@ -17,14 +22,14 @@ export function Chat({
   id: string;
   initialMessages: Array<AIMessage>;
 }) {
-  // Load persisted messages on mount
-  const [persistedMessages, setPersistedMessages] = useState<Array<AIMessage>>([]);
+  // Load persisted messages (with 'completed') on mount.
+  const [persistedMessages, setPersistedMessages] = useState<Array<ExtendedMessage>>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (stored) {
       try {
-        const msgs = JSON.parse(stored);
+        const msgs: ExtendedMessage[] = JSON.parse(stored);
         setPersistedMessages(msgs);
       } catch (err) {
         console.error("Failed to parse stored messages", err);
@@ -32,7 +37,7 @@ export function Chat({
     }
   }, []);
 
-  // Use persisted messages if available; otherwise, use initialMessages
+  // Use persisted messages if available; otherwise, use initialMessages.
   const {
     messages,
     handleSubmit,
@@ -47,8 +52,8 @@ export function Chat({
     initialMessages: persistedMessages.length > 0 ? persistedMessages : initialMessages,
     maxSteps: 10,
     onFinish: () => {
-      // Mark all messages as completed and persist them
-      const updated = messages.map((m) => ({ ...m, completed: true }));
+      // Mark all messages as completed and persist them.
+      const updated = messages.map((m) => ({ ...m, completed: true })) as ExtendedMessage[];
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
       window.history.replaceState({}, "", `/chat/${id}`);
     },
@@ -69,8 +74,8 @@ export function Chat({
       const timer = setTimeout(() => {
         setIsTypingLastMessage(false);
         lastMessageRef.current = null;
-        // Mark messages as completed and persist them
-        const updated = messages.map((m) => ({ ...m, completed: true }));
+        // Mark messages as completed and persist them.
+        const updated = messages.map((m) => ({ ...m, completed: true })) as ExtendedMessage[];
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
       }, 500);
       return () => clearTimeout(timer);
