@@ -1,6 +1,11 @@
 "use client";
 
-import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
+import {
+  Attachment,
+  ChatRequestOptions,
+  CreateMessage,
+  Message,
+} from "ai";
 import { motion } from "framer-motion";
 import React, {
   useRef,
@@ -32,6 +37,24 @@ const suggestedActions = [
   },
 ];
 
+interface MultimodalInputProps {
+  input: string;
+  setInput: (value: string) => void;
+  isLoading: boolean;
+  stop: () => void;
+  attachments: Array<Attachment>;
+  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
+  messages: Array<Message>;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: ChatRequestOptions
+  ) => Promise<string | null | undefined>;
+  handleSubmit: (
+    event?: { preventDefault?: () => void },
+    chatRequestOptions?: ChatRequestOptions
+  ) => void;
+}
+
 export function MultimodalInput({
   input,
   setInput,
@@ -42,12 +65,14 @@ export function MultimodalInput({
   messages,
   append,
   handleSubmit,
-}) {
-  const textareaRef = useRef(null);
+}: MultimodalInputProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
   useEffect(() => {
-    if (textareaRef.current) adjustHeight();
+    if (textareaRef.current) {
+      adjustHeight();
+    }
   }, []);
 
   const adjustHeight = () => {
@@ -57,82 +82,202 @@ export function MultimodalInput({
     }
   };
 
-  const handleInput = (event) => {
+  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
     adjustHeight();
   };
 
-  const fileInputRef = useRef(null);
-  const [uploadQueue, setUploadQueue] = useState([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    handleSubmit(undefined, { experimental_attachments: attachments });
+    handleSubmit(undefined, {
+      experimental_attachments: attachments,
+    });
+
     setAttachments([]);
-    if (width && width > 768) textareaRef.current?.focus();
+
+    if (width && width > 768) {
+      textareaRef.current?.focus();
+    }
   }, [attachments, handleSubmit, setAttachments, width]);
 
+  const handleFileUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/files/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
+      }
+
+      const data = await response.json();
+
+      setAttachments((prev) => [
+        ...prev,
+        {
+          name: data.name,
+          url: data.url,
+          size: data.size,
+          uploadedAt: data.uploadedAt,
+          contentType: file.type,
+        },
+      ]);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Upload failed"
+      );
+    }
+  };
+
+  const handleFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files || []);
+      setUploadQueue(files.map((file) => file.name));
+
+      try {
+        const uploadPromises = files.map((file) => handleFileUpload(file));
+        await Promise.all(uploadPromises);
+      } catch (error) {
+        console.error("Error uploading files!", error);
+      } finally {
+        setUploadQueue([]);
+      }
+    },
+    [setAttachments]
+  );
+
   return (
-    <div className="flex flex-col items-center w-full px-4">
-      {messages.length === 0 && attachments.length === 0 && uploadQueue.length === 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-          {suggestedActions.map((action, index) => (
-            <motion.button
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: 0.05 * index }}
-              onClick={() => append({ role: "user", content: action.action })}
-              className="p-3 bg-gray-200 dark:bg-gray-800 rounded-lg text-left text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-700"
-            >
-              <span className="font-medium">{action.title}</span> {action.label}
-            </motion.button>
+    <div className="relative w-full flex flex-col gap-4">
+      {messages.length === 0 &&
+        attachments.length === 0 &&
+        uploadQueue.length === 0 && (
+          <div className="grid sm:grid-cols-2 gap-4 w-full mx-auto md:max-w-[500px]">
+            {suggestedActions.map((suggestedAction, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: 0.05 * index }}
+                className={index > 1 ? "hidden sm:block" : "block"}
+              >
+                <button
+                  onClick={async () => {
+                    append({
+                      role: "user",
+                      content: suggestedAction.action,
+                    });
+                  }}
+                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                >
+                  <span className="font-medium">{suggestedAction.title}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    {suggestedAction.label}
+                  </span>
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+      <input
+        type="file"
+        className="fixed -top-4 -left-4 opacity-0 pointer-events-none"
+        ref={fileInputRef}
+        multiple
+        onChange={handleFileChange}
+        tabIndex={-1}
+      />
+
+      {(attachments.length > 0 || uploadQueue.length > 0) && (
+        <div className="flex flex-row gap-2 overflow-x-scroll">
+          {attachments.map((attachment) => (
+            <PreviewAttachment
+              key={attachment.url}
+              attachment={attachment}
+            />
+          ))}
+          {uploadQueue.map((filename) => (
+            <PreviewAttachment
+              key={filename}
+              attachment={{
+                url: "",
+                name: filename,
+                contentType: "",
+              }}
+              isUploading={true}
+            />
           ))}
         </div>
       )}
 
-      <input
-        type="file"
-        className="hidden"
-        ref={fileInputRef}
-        multiple
-        onChange={() => {}}
-      />
+      {/* Center and constrain the input area to 75% width */}
+      <div className="flex justify-center w-full">
+        <div className="flex items-center w-full max-w-[75%] bg-gray-100 dark:bg-gray-900 rounded-lg shadow-sm p-2">
+          <Textarea
+            ref={textareaRef}
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInput}
+            className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-2 grow focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={2}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                if (isLoading) {
+                  toast.error(
+                    "Please wait for the model to finish its response!"
+                  );
+                } else {
+                  submitForm();
+                }
+              }
+            }}
+          />
 
-      <div className="flex items-center w-full max-w-lg p-3 bg-gray-100 dark:bg-gray-900 rounded-xl shadow-md">
-        <Textarea
-          ref={textareaRef}
-          placeholder="Send a message..."
-          value={input}
-          onChange={handleInput}
-          className="flex-grow p-2 bg-transparent border-none outline-none resize-none"
-          rows={2}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              if (!isLoading) submitForm();
-            }
-          }}
-        />
+          <div className="flex items-center gap-2 ml-2">
+            {isLoading ? (
+              <Button
+                className="rounded-full p-1.5 text-white"
+                onClick={(event) => {
+                  event.preventDefault();
+                  stop();
+                }}
+              >
+                <StopIcon size={14} />
+              </Button>
+            ) : (
+              <Button
+                className="rounded-full p-1.5 text-white"
+                onClick={(event) => {
+                  event.preventDefault();
+                  submitForm();
+                }}
+                disabled={input.length === 0 || uploadQueue.length > 0}
+              >
+                <ArrowUpIcon size={14} />
+              </Button>
+            )}
 
-        <div className="flex gap-2">
-          {isLoading ? (
-            <Button onClick={stop} className="p-2 bg-red-500 text-white rounded-full">
-              <StopIcon size={18} />
-            </Button>
-          ) : (
             <Button
-              onClick={submitForm}
-              className="p-2 bg-blue-500 text-white rounded-full"
-              disabled={!input}
+              className="rounded-full p-1.5 dark:border-zinc-700"
+              onClick={(event) => {
+                event.preventDefault();
+                fileInputRef.current?.click();
+              }}
+              variant="outline"
+              disabled={isLoading}
             >
-              <ArrowUpIcon size={18} />
+              <PaperclipIcon size={14} />
             </Button>
-          )}
-
-          <Button onClick={() => fileInputRef.current?.click()} className="p-2 bg-gray-400 text-white rounded-full">
-            <PaperclipIcon size={18} />
-          </Button>
+          </div>
         </div>
       </div>
     </div>
