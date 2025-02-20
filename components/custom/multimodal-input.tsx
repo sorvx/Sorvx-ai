@@ -12,23 +12,23 @@ import React, {
   ChangeEvent,
 } from "react";
 import { toast } from "sonner";
-import TextareaAutosize from "react-textarea-autosize";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 
 const suggestedActions = [
   {
-    title: "What is The most popular Coding ",
-    label: "Language For Making Apps?",
-    action: "What is the most popular coding language for making apps?",
+    title: "What is The most popular  ",
+    label: "Coding Languages For Making Apps?",
+    action: "What is the most popular coding languages for making apps?",
   },
   {
     title: "What is pros of Ai",
     label: "in Our Life?",
-    action: "What are the pros of AI in our daily life?",
+    action: "What is the pros of ai in our daily life?",
   },
 ];
 
@@ -61,6 +61,27 @@ export function MultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      adjustHeight();
+    }
+  }, []);
+
+  const adjustHeight = () => {
+    if (textareaRef.current) {
+      // Reset and set the height based on content.
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  // The missing handleInput function:
+  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(event.target.value);
+    adjustHeight();
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
@@ -76,29 +97,36 @@ export function MultimodalInput({
     }
   }, [attachments, handleSubmit, setAttachments, width]);
 
-  const uploadFile = async (file: File) => {
+  const handleFileUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch(`/api/files/upload`, {
+      const response = await fetch("/api/files/upload", {
         method: "POST",
         body: formData,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          url: data.url,
-          name: data.pathname,
-          contentType: data.contentType,
-        };
-      } else {
-        const { error } = await response.json();
-        toast.error(error);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
       }
-    } catch {
-      toast.error("Failed to upload file, please try again!");
+
+      const data = await response.json();
+      
+      // Add the uploaded file to attachments with explicit contentType
+      setAttachments((prev) => [
+        ...prev,
+        {
+          name: data.name,
+          url: data.url,
+          size: data.size,
+          uploadedAt: data.uploadedAt,
+          contentType: file.type, // Explicitly set the content type
+        },
+      ]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Upload failed");
     }
   };
 
@@ -108,23 +136,15 @@ export function MultimodalInput({
       setUploadQueue(files.map((file) => file.name));
 
       try {
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined,
-        );
-
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
+        const uploadPromises = files.map((file) => handleFileUpload(file));
+        await Promise.all(uploadPromises);
       } catch (error) {
         console.error("Error uploading files!", error);
       } finally {
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments]
   );
 
   return (
@@ -149,7 +169,7 @@ export function MultimodalInput({
                       content: suggestedAction.action,
                     });
                   }}
-                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
                   <span className="text-zinc-500 dark:text-zinc-400">
@@ -189,61 +209,59 @@ export function MultimodalInput({
         </div>
       )}
 
-      <div className="flex items-center w-full">
-        <TextareaAutosize
-          ref={textareaRef}
-          placeholder="Send a message..."
-          value={input}
-          onChange={handleInput}
-          className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 flex-grow"
-          rows={2} // Start small, expand dynamically
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              if (isLoading) {
-                toast.error("Please wait for the model to finish its response!");
-              } else {
-                submitForm();
-              }
-            }
-          }}
-        />
-
-        {isLoading ? (
-          <Button
-            className="rounded-full p-1.5 h-fit ml-2 text-white"
-            onClick={(event) => {
-              event.preventDefault();
-              stop();
-            }}
-          >
-            <StopIcon size={14} />
-          </Button>
-        ) : (
-          <Button
-            className="rounded-full p-1.5 h-fit ml-2 text-white"
-            onClick={(event) => {
-              event.preventDefault();
+      <Textarea
+        ref={textareaRef}
+        placeholder="Send a message..."
+        value={input}
+        onChange={handleInput}
+        className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2"
+        rows={2} // Start small, expand dynamically
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            if (isLoading) {
+              toast.error("Please wait for the model to finish its response!");
+            } else {
               submitForm();
-            }}
-            disabled={input.length === 0 || uploadQueue.length > 0}
-          >
-            <ArrowUpIcon size={14} />
-          </Button>
-        )}
+            }
+          }
+        }}
+      />
 
+      {isLoading ? (
         <Button
-          className="rounded-full p-1.5 h-fit ml-2 dark:border-zinc-700"
+          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
           onClick={(event) => {
             event.preventDefault();
-            fileInputRef.current?.click();
+            stop();
           }}
-          variant="outline"
-          disabled={isLoading}
         >
-          <PaperclipIcon size={14} />
+          <StopIcon size={14} />
         </Button>
-      </div>
+      ) : (
+        <Button
+          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+          onClick={(event) => {
+            event.preventDefault();
+            submitForm();
+          }}
+          disabled={input.length === 0 || uploadQueue.length > 0}
+        >
+          <ArrowUpIcon size={14} />
+        </Button>
+      )}
+
+      <Button
+        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+        onClick={(event) => {
+          event.preventDefault();
+          fileInputRef.current?.click();
+        }}
+        variant="outline"
+        disabled={isLoading}
+      >
+        <PaperclipIcon size={14} />
+      </Button>
     </div>
   );
 }
