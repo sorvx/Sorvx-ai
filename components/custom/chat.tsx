@@ -8,12 +8,10 @@ import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
 
-// Extend the AIMessage type to include a custom 'completed' property.
+// Extend the AIMessage type to include our custom property.
 interface ExtendedMessage extends AIMessage {
   completed?: boolean;
 }
-
-const LOCAL_STORAGE_KEY = "chat_messages";
 
 export function Chat({
   id,
@@ -22,6 +20,9 @@ export function Chat({
   id: string;
   initialMessages: Array<AIMessage>;
 }) {
+  // Use a unique key for each chat based on its id.
+  const LOCAL_STORAGE_KEY = `chat_messages_${id}`;
+
   // Load persisted messages (with the 'completed' property) on mount.
   const [persistedMessages, setPersistedMessages] = useState<Array<ExtendedMessage>>([]);
 
@@ -35,7 +36,7 @@ export function Chat({
         console.error("Failed to parse stored messages", err);
       }
     }
-  }, []);
+  }, [LOCAL_STORAGE_KEY]);
 
   // Use persisted messages if available; otherwise, use the provided initialMessages.
   const {
@@ -80,7 +81,7 @@ export function Chat({
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, messages]);
+  }, [isLoading, messages, LOCAL_STORAGE_KEY]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
