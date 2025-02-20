@@ -44,7 +44,7 @@ export const Message = ({
         await navigator.clipboard.writeText(content);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      } catch (error) {
+      } catch (error)
         console.error("Copy failed", error);
       }
     }
@@ -109,17 +109,19 @@ export const Message = ({
             </div>
 
             {toolInvocations && toolInvocations.length > 0 && (
-              <div className="flex flex-col gap-4 overflow-x-auto thin-scrollbar">
-                {toolInvocations.map((toolInvocation) => (
-                  <pre
-                    key={toolInvocation.toolCallId}
-                    className="whitespace-pre-wrap text-xs"
-                  >
-                    {JSON.stringify(toolInvocation.result, null, 2)}
-                  </pre>
-                ))}
-              </div>
-            )}
+  <div className="flex flex-col gap-4 overflow-x-auto thin-scrollbar">
+    {toolInvocations.map((toolInvocation) =>
+      'result' in toolInvocation ? (
+        <pre
+          key={toolInvocation.toolCallId}
+          className="whitespace-pre-wrap text-xs"
+        >
+          {JSON.stringify(toolInvocation.result, null, 2)}
+        </pre>
+      ) : null
+    )}
+  </div>
+)}
 
             {attachments && attachments.length > 0 && (
               <div className="flex flex-row gap-2 overflow-x-auto mt-2">
