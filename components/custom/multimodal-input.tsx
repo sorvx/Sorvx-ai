@@ -148,120 +148,120 @@ export function MultimodalInput({
   );
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
-            {suggestedActions.map((suggestedAction, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.05 * index }}
-                className={index > 1 ? "hidden sm:block" : "block"}
-              >
-                <button
-                  onClick={async () => {
-                    append({
-                      role: "user",
-                      content: suggestedAction.action,
-                    });
-                  }}
-                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
-                >
-                  <span className="font-medium">{suggestedAction.title}</span>
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    {suggestedAction.label}
-                  </span>
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-      <input
-        type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
-        ref={fileInputRef}
-        multiple
-        onChange={handleFileChange}
-        tabIndex={-1}
-      />
-
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll">
-          {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
-          ))}
-          {uploadQueue.map((filename) => (
-            <PreviewAttachment
-              key={filename}
-              attachment={{
-                url: "",
-                name: filename,
-                contentType: "",
+   <div className="relative w-full flex flex-col gap-4">
+  {messages.length === 0 &&
+    attachments.length === 0 &&
+    uploadQueue.length === 0 && (
+      <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
+        {suggestedActions.map((suggestedAction, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ delay: 0.05 * index }}
+            className={index > 1 ? "hidden sm:block" : "block"}
+          >
+            <button
+              onClick={async () => {
+                append({
+                  role: "user",
+                  content: suggestedAction.action,
+                });
               }}
-              isUploading={true}
-            />
-          ))}
-        </div>
-      )}
-
-    <Textarea
-  ref={textareaRef}
-  placeholder="Send a message..."
-  value={input}
-  onChange={handleInput}
-  className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 w-[calc(100%-60px)]" // Adjust width
-  rows={2} // Start small, expand dynamically
-  onKeyDown={(event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      if (isLoading) {
-        toast.error("Please wait for the model to finish its response!");
-      } else {
-        submitForm();
-      }
-    }
-  }}
-/>
-
-{isLoading ? (
-  <Button
-    className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-    onClick={(event) => {
-      event.preventDefault();
-      stop();
-    }}
-  >
-    <StopIcon size={14} />
-  </Button>
-) : (
-  <Button
-    className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-    onClick={(event) => {
-      event.preventDefault();
-      submitForm();
-    }}
-    disabled={input.length === 0 || uploadQueue.length > 0}
-  >
-    <ArrowUpIcon size={14} />
-  </Button>
-)}
-
-<Button
-  className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-  onClick={(event) => {
-    event.preventDefault();
-    fileInputRef.current?.click();
-  }}
-  variant="outline"
-  disabled={isLoading}
->
-  <PaperclipIcon size={14} />
-</Button>
+              className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <span className="font-medium">{suggestedAction.title}</span>
+              <span className="text-zinc-500 dark:text-zinc-400">
+                {suggestedAction.label}
+              </span>
+            </button>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  
+  <input
+    type="file"
+    className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+    ref={fileInputRef}
+    multiple
+    onChange={handleFileChange}
+    tabIndex={-1}
+  />
+  
+  {(attachments.length > 0 || uploadQueue.length > 0) && (
+    <div className="flex flex-row gap-2 overflow-x-scroll">
+      {attachments.map((attachment) => (
+        <PreviewAttachment key={attachment.url} attachment={attachment} />
+      ))}
+      {uploadQueue.map((filename) => (
+        <PreviewAttachment
+          key={filename}
+          attachment={{
+            url: "",
+            name: filename,
+            contentType: "",
+          }}
+          isUploading={true}
+        />
+      ))}
     </div>
-  );
-}
+  )}
+  
+  <div className="flex items-center w-full">
+    <Textarea
+      ref={textareaRef}
+      placeholder="Send a message..."
+      value={input}
+      onChange={handleInput}
+      className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 flex-grow"
+      rows={2} // Start small, expand dynamically
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          if (isLoading) {
+            toast.error("Please wait for the model to finish its response!");
+          } else {
+            submitForm();
+          }
+        }
+      }}
+    />
+    
+    {isLoading ? (
+      <Button
+        className="rounded-full p-1.5 h-fit ml-2 text-white"
+        onClick={(event) => {
+          event.preventDefault();
+          stop();
+        }}
+      >
+        <StopIcon size={14} />
+      </Button>
+    ) : (
+      <Button
+        className="rounded-full p-1.5 h-fit ml-2 text-white"
+        onClick={(event) => {
+          event.preventDefault();
+          submitForm();
+        }}
+        disabled={input.length === 0 || uploadQueue.length > 0}
+      >
+        <ArrowUpIcon size={14} />
+      </Button>
+    )}
+    
+    <Button
+      className="rounded-full p-1.5 h-fit ml-2 dark:border-zinc-700"
+      onClick={(event) => {
+        event.preventDefault();
+        fileInputRef.current?.click();
+      }}
+      variant="outline"
+      disabled={isLoading}
+    >
+      <PaperclipIcon size={14} />
+    </Button>
+  </div>
+</div>
