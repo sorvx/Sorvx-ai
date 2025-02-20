@@ -101,7 +101,6 @@ export const Message = ({
                 isUser ? (
                   <div>{content}</div>
                 ) : (
-                  // Wrap the assistant content in a container with a fixed min-height
                   <div
                     className="relative"
                     style={{ minHeight: "3rem", willChange: "transform" }}
@@ -147,7 +146,6 @@ export const Message = ({
               </div>
             )}
 
-            {/* Advanced copy button for chatbot messages only */}
             {!isUser && (
               <div className="absolute bottom-2 right-2 flex items-center">
                 <motion.button
