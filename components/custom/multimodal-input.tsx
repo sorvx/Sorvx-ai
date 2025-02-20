@@ -135,18 +135,21 @@ export function MultimodalInput({
           <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
             {suggestedActions.map((suggestedAction, index) => (
               <motion.div
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: 0.05 * index }}
-                key={index}
                 className={index > 1 ? "hidden sm:block" : "block"}
               >
                 <button
-                  onClick={() =>
-                    append({ role: "user", content: suggestedAction.action })
-                  }
-                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
+                  onClick={async () => {
+                    append({
+                      role: "user",
+                      content: suggestedAction.action,
+                    });
+                  }}
+                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
                   <span className="text-zinc-500 dark:text-zinc-400">
@@ -175,63 +178,72 @@ export function MultimodalInput({
           {uploadQueue.map((filename) => (
             <PreviewAttachment
               key={filename}
-              attachment={{ url: "", name: filename, contentType: "" }}
+              attachment={{
+                url: "",
+                name: filename,
+                contentType: "",
+              }}
               isUploading={true}
             />
           ))}
         </div>
       )}
 
-      {/* Textarea with Max Height and Character Limit */}
-      <Textarea
-  ref={textareaRef}
-  placeholder="Send a message..."
-  value={input}
-  onChange={handleInput}
-  className="min-h-[40px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2"
-  rows={1} // Start small, expand dynamically
-  onKeyDown={(event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      if (!isLoading) submitForm();
-    }
-  }}
-/>
+      <div className="flex items-center w-full">
+        <TextareaAutosize
+          ref={textareaRef}
+          placeholder="Send a message..."
+          value={input}
+          onChange={handleInput}
+          className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 flex-grow"
+          rows={2} // Start small, expand dynamically
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              if (isLoading) {
+                toast.error("Please wait for the model to finish its response!");
+              } else {
+                submitForm();
+              }
+            }
+          }}
+        />
 
-      {isLoading ? (
+        {isLoading ? (
+          <Button
+            className="rounded-full p-1.5 h-fit ml-2 text-white"
+            onClick={(event) => {
+              event.preventDefault();
+              stop();
+            }}
+          >
+            <StopIcon size={14} />
+          </Button>
+        ) : (
+          <Button
+            className="rounded-full p-1.5 h-fit ml-2 text-white"
+            onClick={(event) => {
+              event.preventDefault();
+              submitForm();
+            }}
+            disabled={input.length === 0 || uploadQueue.length > 0}
+          >
+            <ArrowUpIcon size={14} />
+          </Button>
+        )}
+
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+          className="rounded-full p-1.5 h-fit ml-2 dark:border-zinc-700"
           onClick={(event) => {
             event.preventDefault();
-            stop();
+            fileInputRef.current?.click();
           }}
+          variant="outline"
+          disabled={isLoading}
         >
-          <StopIcon size={14} />
+          <PaperclipIcon size={14} />
         </Button>
-      ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-          onClick={(event) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
-
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
+      </div>
     </div>
   );
 }
