@@ -209,12 +209,12 @@ export function MultimodalInput({
         </div>
       )}
 
-     <Textarea
+    <Textarea
   ref={textareaRef}
   placeholder="Send a message..."
   value={input}
   onChange={handleInput}
-  className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 max-w-[75%]" // Set a specific width
+  className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 w-[calc(100%-60px)]" // Adjust width
   rows={2} // Start small, expand dynamically
   onKeyDown={(event) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -228,40 +228,40 @@ export function MultimodalInput({
   }}
 />
 
-      {isLoading ? (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-          onClick={(event) => {
-            event.preventDefault();
-            stop();
-          }}
-        >
-          <StopIcon size={14} />
-        </Button>
-      ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-          onClick={(event) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
+{isLoading ? (
+  <Button
+    className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+    onClick={(event) => {
+      event.preventDefault();
+      stop();
+    }}
+  >
+    <StopIcon size={14} />
+  </Button>
+) : (
+  <Button
+    className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+    onClick={(event) => {
+      event.preventDefault();
+      submitForm();
+    }}
+    disabled={input.length === 0 || uploadQueue.length > 0}
+  >
+    <ArrowUpIcon size={14} />
+  </Button>
+)}
 
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
+<Button
+  className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+  onClick={(event) => {
+    event.preventDefault();
+    fileInputRef.current?.click();
+  }}
+  variant="outline"
+  disabled={isLoading}
+>
+  <PaperclipIcon size={14} />
+</Button>
     </div>
   );
 }
