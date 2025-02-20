@@ -91,27 +91,9 @@ export const Message = ({
         className={`relative flex flex-col gap-2 transition-all duration-200 break-words max-w-[75%] ${
           isUser
             ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white py-3 px-4 rounded-t-2xl rounded-bl-2xl rounded-br-md self-end cursor-pointer hover:shadow-lg hover:from-purple-500 hover:to-purple-600"
-            : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 text-zinc-800 dark:text-zinc-100 p-4 rounded-t-2xl rounded-br-2xl rounded-bl-md group"
+            : "bg-white/70 dark:bg-gray-900/70 backdrop-blur-md hover:bg-white/80 dark:hover:bg-gray-900/80 text-gray-900 dark:text-gray-100 p-4 rounded-xl shadow-lg group"
         }`}
       >
-        {/* Copy button for bot messages */}
-        {!isUser && (
-          <button
-            onClick={handleCopy}
-            tabIndex={-1}
-            className="absolute right-2 top-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none"
-            aria-label={copied ? "Copied!" : "Copy message"}
-          >
-            {copied ? (
-              <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                Copied!
-              </div>
-            ) : (
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">Copy</div>
-            )}
-          </button>
-        )}
-
         {/* Message content */}
         {isLoading ? (
           <div className="flex flex-col gap-2">
@@ -211,6 +193,28 @@ export const Message = ({
                     attachment={attachment}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Copy button for bot messages placed at the bottom */}
+            {!isUser && (
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={handleCopy}
+                  tabIndex={-1}
+                  className="px-2 py-1 rounded-md transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none"
+                  aria-label={copied ? "Copied!" : "Copy message"}
+                >
+                  {copied ? (
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                      Copied!
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Copy
+                    </span>
+                  )}
+                </button>
               </div>
             )}
           </>
