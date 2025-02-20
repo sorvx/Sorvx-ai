@@ -20,6 +20,7 @@ interface MessageProps {
   isFirstMessage?: boolean;
   isLoading?: boolean;
   isStreaming?: boolean;
+  completed?: boolean; // New: marks that the typing animation is done
 }
 
 export const Message = ({
@@ -32,6 +33,7 @@ export const Message = ({
   isFirstMessage = false,
   isLoading = false,
   isStreaming = false,
+  completed = false,
 }: MessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
@@ -90,13 +92,19 @@ export const Message = ({
           <>
             <div
               className={
-                isUser ? "text-sm font-medium" : "text-base leading-relaxed pr-12"
+                isUser
+                  ? "text-sm font-medium"
+                  : "text-base leading-relaxed pr-12"
               }
             >
               {typeof content === "string" ? (
                 isUser ? (
                   <div>{content}</div>
+                ) : completed ? (
+                  // Already completed messages render static content
+                  <div>{content}</div>
                 ) : (
+                  // New messages animate with typing effect
                   <TypingEffect
                     text={content}
                     messageId={messageId}
