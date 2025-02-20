@@ -52,9 +52,7 @@ export const Message = ({
     if (typeof content === "string") {
       navigator.clipboard.writeText(content).then(() => {
         setCopied(true);
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
+        // Removed document.activeElement.blur() to avoid auto-scroll to the bottom.
         setTimeout(() => setCopied(false), 2000);
       });
     }
