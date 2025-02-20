@@ -199,7 +199,7 @@ export const Message = ({
               <div className="mt-2 flex justify-end">
                 <button
                   onClick={handleCopy}
-                  tabIndex={-1}
+                 
                   className="px-2 py-1 rounded-md transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none"
                   aria-label={copied ? "Copied!" : "Copy message"}
                 >
