@@ -70,7 +70,6 @@ export function MultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      // Reset and set the height based on content.
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
@@ -113,7 +112,6 @@ export function MultimodalInput({
 
       const data = await response.json();
 
-      // Add the uploaded file to attachments with explicit contentType
       setAttachments((prev) => [
         ...prev,
         {
@@ -121,7 +119,7 @@ export function MultimodalInput({
           url: data.url,
           size: data.size,
           uploadedAt: data.uploadedAt,
-          contentType: file.type, // Explicitly set the content type
+          contentType: file.type,
         },
       ]);
     } catch (error) {
@@ -208,60 +206,67 @@ export function MultimodalInput({
         </div>
       )}
 
-      <div className="flex items-center w-full">
-        <Textarea
-          ref={textareaRef}
-          placeholder="Send a message..."
-          value={input}
-          onChange={handleInput}
-          className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none p-2 flex-grow"
-          rows={2} // Start small, expand dynamically
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              if (isLoading) {
-                toast.error("Please wait for the model to finish its response!");
-              } else {
-                submitForm();
+      {/* Center and constrain the input area to 75% width */}
+      <div className="flex justify-center w-full">
+        <div className="flex items-center w-full max-w-[75%] bg-gray-100 dark:bg-gray-900 rounded-lg shadow-sm p-2">
+          <Textarea
+            ref={textareaRef}
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInput}
+            className="min-h-[40px] max-h-[150px] overflow-hidden resize-none rounded-lg text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-2 flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={2}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                if (isLoading) {
+                  toast.error(
+                    "Please wait for the model to finish its response!"
+                  );
+                } else {
+                  submitForm();
+                }
               }
-            }
-          }}
-        />
-
-        {isLoading ? (
-          <Button
-            className="rounded-full p-1.5 h-fit ml-2 text-white"
-            onClick={(event) => {
-              event.preventDefault();
-              stop();
             }}
-          >
-            <StopIcon size={14} />
-          </Button>
-        ) : (
-          <Button
-            className="rounded-full p-1.5 h-fit ml-2 text-white"
-            onClick={(event) => {
-              event.preventDefault();
-              submitForm();
-            }}
-            disabled={input.length === 0 || uploadQueue.length > 0}
-          >
-            <ArrowUpIcon size={14} />
-          </Button>
-        )}
+          />
 
-        <Button
-          className="rounded-full p-1.5 h-fit ml-2 dark:border-zinc-700"
-          onClick={(event) => {
-            event.preventDefault();
-            fileInputRef.current?.click();
-          }}
-          variant="outline"
-          disabled={isLoading}
-        >
-          <PaperclipIcon size={14} />
-        </Button>
+          <div className="flex items-center gap-2 ml-2">
+            {isLoading ? (
+              <Button
+                className="rounded-full p-1.5 text-white"
+                onClick={(event) => {
+                  event.preventDefault();
+                  stop();
+                }}
+              >
+                <StopIcon size={14} />
+              </Button>
+            ) : (
+              <Button
+                className="rounded-full p-1.5 text-white"
+                onClick={(event) => {
+                  event.preventDefault();
+                  submitForm();
+                }}
+                disabled={input.length === 0 || uploadQueue.length > 0}
+              >
+                <ArrowUpIcon size={14} />
+              </Button>
+            )}
+
+            <Button
+              className="rounded-full p-1.5 dark:border-zinc-700"
+              onClick={(event) => {
+                event.preventDefault();
+                fileInputRef.current?.click();
+              }}
+              variant="outline"
+              disabled={isLoading}
+            >
+              <PaperclipIcon size={14} />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
