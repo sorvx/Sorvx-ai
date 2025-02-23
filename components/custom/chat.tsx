@@ -8,10 +8,11 @@ import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
 
-// Extend the AIMessage type to include our custom property.
-interface ExtendedMessage extends AIMessage {
+// Update the ExtendedMessage type to use AIMessage
+type ExtendedMessage = AIMessage & {
   completed?: boolean;
-}
+  isStreaming?: boolean;
+};
 
 export function Chat({
   id,
@@ -53,10 +54,10 @@ export function Chat({
     initialMessages: persistedMessages.length > 0 ? persistedMessages : initialMessages,
     maxSteps: 10,
     onFinish: () => {
-      // Mark all messages as completed and persist them.
+      setIsTypingLastMessage(false);
+      lastMessageRef.current = null;
       const updated = messages.map((m) => ({ ...m, completed: true })) as ExtendedMessage[];
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-      window.history.replaceState({}, "", `/chat/${id}`);
     },
   });
 
@@ -66,22 +67,14 @@ export function Chat({
   const lastMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (isLoading) {
-      setIsTypingLastMessage(true);
-      if (messages.length > 0) {
-        lastMessageRef.current = messages[messages.length - 1].id;
+    if (isLoading && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === "assistant") {
+        setIsTypingLastMessage(true);
+        lastMessageRef.current = lastMessage.id;
       }
-    } else {
-      const timer = setTimeout(() => {
-        setIsTypingLastMessage(false);
-        lastMessageRef.current = null;
-        // Mark messages as completed and persist them.
-        const updated = messages.map((m) => ({ ...m, completed: true })) as ExtendedMessage[];
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-      }, 500);
-      return () => clearTimeout(timer);
     }
-  }, [isLoading, messages, LOCAL_STORAGE_KEY]);
+  }, [isLoading, messages]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -94,7 +87,10 @@ export function Chat({
           >
             {messages.length === 0 && <Overview />}
             {messages.map((message, index) => {
-              const extMessage = message as ExtendedMessage;
+              const isLastMessage = index === messages.length - 1;
+              const isAssistantMessage = message.role === "assistant";
+              const shouldStream = isLastMessage && isAssistantMessage && isLoading;
+              
               return (
                 <PreviewMessage
                   key={message.id}
@@ -104,20 +100,21 @@ export function Chat({
                   content={message.content}
                   attachments={message.experimental_attachments}
                   toolInvocations={message.toolInvocations}
-                  isLoading={
-                    index === messages.length - 1 &&
-                    (isLoading || isTypingLastMessage) &&
-                    message.role === "assistant"
-                  }
-                  isStreaming={message.id === lastMessageRef.current}
-                  completed={extMessage.completed || false}
+                  isLoading={false}
+                  isStreaming={shouldStream}
+                  completed={!shouldStream}
                 />
               );
             })}
 
-            {/* Show typing indicator for new messages from user */}
+            {/* Only show typing indicator for assistant messages */}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <PreviewMessage chatId={id} role="assistant" content="" isLoading={true} />
+              <PreviewMessage 
+                chatId={id} 
+                role="assistant" 
+                content="" 
+                isLoading={true}
+              />
             )}
 
             <div ref={messagesEndRef} className="shrink-0 min-h-[24px]" />

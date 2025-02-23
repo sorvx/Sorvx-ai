@@ -8,7 +8,7 @@ config({
   path: ".env.local",
 });
 
-const CA_CERT = `-----BEGIN CERTIFICATE-----
+/*const CA_CERT = `-----BEGIN CERTIFICATE-----
 MIIETTCCArWgAwIBAgIUMVFwAcPyApGsBLG6qiEEuo9xfS8wDQYJKoZIhvcNAQEM
 BQAwQDE+MDwGA1UEAww1YjljYTBiMTItN2Y2My00YWQ3LTg0YTMtMjliZDkwNDhm
 OWI0IEdFTiAxIFByb2plY3QgQ0EwHhcNMjUwMjEzMDUyMzQyWhcNMzUwMjExMDUy
@@ -33,7 +33,7 @@ hAKfFeBICMho5jgSRcQgzZvHgOe/ybF5bLQz47WxbZe1JDiqgXOuZQ5uw3cHxeNj
 y5j+Zh5rqXUL6GgEkQMhM7ICh1iVXSHZzEK552DupZ0jPPh+L68UqHhiqdqeCBE6
 9KgV1smuotoqY6NP2a13ZWX7z0pI0wZaulo6HUSZG6vF4Pjf3iC586BnjGl5DRye
 rA==
------END CERTIFICATE-----`;
+-----END CERTIFICATE-----`;*/
 
 const runMigrate = async () => {
   if (!process.env.POSTGRES_URL) {
@@ -42,7 +42,7 @@ const runMigrate = async () => {
 
   const connection = postgres(process.env.POSTGRES_URL, {
     max: 1,
-    ssl: { ca: CA_CERT }, // Explicitly pass the CA cert
+    //ssl: { ca: CA_CERT }, // Explicitly pass the CA cert
   });
 
   const db = drizzle(connection);

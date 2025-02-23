@@ -41,7 +41,6 @@ export function TypingEffect({
     // Handle streaming updates
     if (isStreaming) {
       setDisplayedText(text);
-      setIsAnimating(true);
       return;
     }
 
@@ -51,7 +50,6 @@ export function TypingEffect({
 
     if (animatedMessages[messageId]) {
       setDisplayedText(text);
-      setIsAnimating(false);
       return;
     }
 
@@ -65,8 +63,7 @@ export function TypingEffect({
         setDisplayedText(fullText.slice(0, currentIndex));
         currentIndex++;
         
-        const nextDelay = speed + (Math.random() * 10 - 5);
-        animationTimeoutRef.current = setTimeout(animateText, nextDelay);
+        animationTimeoutRef.current = setTimeout(animateText, speed);
       } else {
         setIsAnimating(false);
         // Mark message as animated

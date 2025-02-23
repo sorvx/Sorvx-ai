@@ -22,13 +22,14 @@ import { TypingEffect } from "./typing-effect";
 interface MessageProps {
   chatId: string;
   messageId?: string;
-  role: string;
+  role: "function" | "system" | "user" | "assistant" | "data" | "tool";
   content: string | ReactNode;
   toolInvocations?: Array<ToolInvocation>;
   attachments?: Array<Attachment>;
   isFirstMessage?: boolean;
   isLoading?: boolean;
   isStreaming?: boolean;
+  completed?: boolean;
 }
 
 export const Message = ({
@@ -41,6 +42,7 @@ export const Message = ({
   isFirstMessage = false,
   isLoading = false,
   isStreaming = false,
+  completed = false,
 }: MessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
@@ -115,7 +117,7 @@ export const Message = ({
                     messageId={messageId}
                     chatId={chatId}
                     speed={25}
-                    isStreaming={isStreaming}
+                    isStreaming={true}
                   />
                 ) : (
                   <Markdown>{content}</Markdown>
