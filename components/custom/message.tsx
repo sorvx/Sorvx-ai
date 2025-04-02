@@ -97,7 +97,7 @@ export const Message = ({
         >
           {/* Message content */}
           {isLoading ? (
-            <div className="flex items-center h-6">
+            <div className="flex items-center">
               <TypingDots />
             </div>
           ) : (
