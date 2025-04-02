@@ -117,122 +117,123 @@ export const History = ({ user }: { user: User | undefined }) => {
         
         <AnimatePresence>
           {isOpen && (
-            <SheetContent
-              side="left"
-              className="w-[320px] sm:w-[380px] p-0 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-800"
+            <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.3 }}
+              className="w-[320px] sm:w-[380px] p-0 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-800"
             >
-              <SheetHeader className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center">
-                <SheetTitle className="text-lg font-semibold flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                  Chat History
-                </SheetTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-full"
-                  aria-label="Close History"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                </Button>
-              </SheetHeader>
-              
-              <div className="flex flex-col h-[calc(100vh-65px)] overflow-hidden">
-                <div className="p-4">
-                  {/* New Chat Button */}
-                  <Link href="/" className="block" onClick={() => setIsOpen(false)}>
-                    <Button
-                      variant="default"
-                      className="w-full flex items-center justify-center gap-2 rounded-lg py-5 bg-violet-600 hover:bg-violet-700 text-white transition-all shadow-sm"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span className="font-medium">New Conversation</span>
-                    </Button>
-                  </Link>
-                </div>
+              <SheetContent side="left" className="p-0">
+                <SheetHeader className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center">
+                  <SheetTitle className="text-lg font-semibold flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                    Chat History
+                  </SheetTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-full"
+                    aria-label="Close History"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                  </Button>
+                </SheetHeader>
                 
-                {/* Chat History List */}
-                <div className="flex-1 overflow-y-auto px-4 pb-6">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
-                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                      <span>Loading conversations...</span>
-                    </div>
-                  ) : history && history.length > 0 ? (
-                    <AnimatePresence initial={false}>
-                      <div className="space-y-1">
-                        {history.map((chat) => (
-                          <motion.div 
-                            key={chat.id} 
-                            className="group relative"
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <Link 
-                              href={`/chat/${chat.id}`} 
-                              className="block" 
-                              onClick={() => setIsOpen(false)}
+                <div className="flex flex-col h-[calc(100vh-65px)] overflow-hidden">
+                  <div className="p-4">
+                    {/* New Chat Button */}
+                    <Link href="/" className="block" onClick={() => setIsOpen(false)}>
+                      <Button
+                        variant="default"
+                        className="w-full flex items-center justify-center gap-2 rounded-lg py-5 bg-violet-600 hover:bg-violet-700 text-white transition-all shadow-sm"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span className="font-medium">New Conversation</span>
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  {/* Chat History List */}
+                  <div className="flex-1 overflow-y-auto px-4 pb-6">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        <span>Loading conversations...</span>
+                      </div>
+                    ) : history && history.length > 0 ? (
+                      <AnimatePresence initial={false}>
+                        <div className="space-y-1">
+                          {history.map((chat) => (
+                            <motion.div 
+                              key={chat.id} 
+                              className="group relative"
+                              initial={{ opacity: 0, y: 5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.2 }}
                             >
-                              <div
-                                className={cn(
-                                  "w-full text-left flex flex-col rounded-lg p-3 transition-all",
-                                  chat.id === id 
-                                    ? "bg-violet-50 dark:bg-violet-900/20 border-l-2 border-violet-500 dark:border-violet-400" 
-                                    : "hover:bg-gray-50 dark:hover:bg-gray-800/50 border-l-2 border-transparent"
-                                )}
+                              <Link 
+                                href={`/chat/${chat.id}`} 
+                                className="block" 
+                                onClick={() => setIsOpen(false)}
                               >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1 truncate font-medium text-gray-800 dark:text-gray-200">
-                                    {formatChatTitle(chat)}
+                                <div
+                                  className={cn(
+                                    "w-full text-left flex flex-col rounded-lg p-3 transition-all",
+                                    chat.id === id 
+                                      ? "bg-violet-50 dark:bg-violet-900/20 border-l-2 border-violet-500 dark:border-violet-400" 
+                                      : "hover:bg-gray-50 dark:hover:bg-gray-800/50 border-l-2 border-transparent"
+                                  )}
+                                >
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1 truncate font-medium text-gray-800 dark:text-gray-200">
+                                      {formatChatTitle(chat)}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                        {getRelativeTime(chat.createdAt)}
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                      {getRelativeTime(chat.createdAt)}
-                                    </span>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                                    {chat.messages.length} message{chat.messages.length !== 1 ? 's' : ''}
                                   </div>
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                                  {chat.messages.length} message{chat.messages.length !== 1 ? 's' : ''}
-                                </div>
-                              </div>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 rounded-full"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteId(chat.id);
-                                setShowDeleteDialog(true);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                              <span className="sr-only">Delete chat</span>
-                            </Button>
-                          </motion.div>
-                        ))}
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 rounded-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteId(chat.id);
+                                  setShowDeleteDialog(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                                <span className="sr-only">Delete chat</span>
+                              </Button>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </AnimatePresence>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-32 text-center p-4">
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-3 mb-3">
+                          <MessageSquare className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">No conversations yet</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Start a new chat to begin a conversation
+                        </p>
                       </div>
-                    </AnimatePresence>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-32 text-center p-4">
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-3 mb-3">
-                        <MessageSquare className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">No conversations yet</h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Start a new chat to begin a conversation
-                      </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
+              </SheetContent>
+            </motion.div>
           )}
         </AnimatePresence>
       </Sheet>
