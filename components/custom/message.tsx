@@ -47,16 +47,37 @@ export const Message = ({
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
 
+  // Fixed copy function to prevent scrolling
   const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    // Prevent any default behavior
     e.preventDefault();
-
+    e.stopPropagation();
+    
+    // Save current scroll position
+    const scrollPos = window.scrollY;
+    
     if (typeof content === "string") {
-      navigator.clipboard.writeText(content).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
+      navigator.clipboard.writeText(content)
+        .then(() => {
+          setCopied(true);
+          
+          // Restore scroll position in case it changed
+          window.scrollTo({
+            top: scrollPos,
+            behavior: 'auto'
+          });
+          
+          setTimeout(() => {
+            setCopied(false);
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy text: ', err);
+        });
     }
+    
+    // Return false to prevent any other default behaviors
+    return false;
   };
 
   return (
@@ -128,9 +149,10 @@ export const Message = ({
             </div>
           )}
 
-          {/* Copy button for assistant messages */}
+          {/* Copy button for assistant messages - Fixed to prevent scrolling */}
           {!isUser && !isLoading && typeof content === "string" && (
             <button
+              type="button" // Explicitly set type to button to prevent form submission
               onClick={handleCopy}
               className="absolute top-3 right-3 p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label={copied ? "Copied" : "Copy message"}
