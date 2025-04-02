@@ -124,21 +124,21 @@ export const History = ({ user }: { user: User | undefined }) => {
               transition={{ duration: 0.3 }}
               className="w-[320px] sm:w-[380px] p-0 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-800"
             >
-              <SheetContent side="left" className="p-0">
+              <SheetContent side="left" className="p-0 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-4 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-full"
+                  aria-label="Close History"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                </Button>
                 <SheetHeader className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center">
                   <SheetTitle className="text-lg font-semibold flex items-center gap-2">
                     <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                     Chat History
                   </SheetTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-full"
-                    aria-label="Close History"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                  </Button>
                 </SheetHeader>
                 
                 <div className="flex flex-col h-[calc(100vh-65px)] overflow-hidden">
@@ -261,4 +261,4 @@ export const History = ({ user }: { user: User | undefined }) => {
       </AlertDialog>
     </>
   );
-}; 
+};
