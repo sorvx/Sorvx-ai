@@ -261,4 +261,4 @@ export const History = ({ user }: { user: User | undefined }) => {
       </AlertDialog>
     </>
   );
-};
+}; 
