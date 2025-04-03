@@ -33,6 +33,7 @@ const CodeBlock = ({
   };
 
   const fallbackCopyText = (text: string) => {
+    const scrollPosition = { top: window.scrollY, left: window.scrollX };
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.top = "0";
@@ -54,6 +55,7 @@ const CodeBlock = ({
       console.error("Fallback: Oops, unable to copy", err);
     }
     document.body.removeChild(textArea);
+    window.scrollTo(scrollPosition.left, scrollPosition.top);
   };
 
   if (inline || !match) {
