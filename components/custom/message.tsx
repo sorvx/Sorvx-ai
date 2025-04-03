@@ -47,37 +47,63 @@ export const Message = ({
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
 
-  // Fixed copy function to prevent scrolling
-  const handleCopy = (e: React.MouseEvent) => {
-    // Prevent any default behavior
+  const handleCopy = async (e: React.MouseEvent) => {
+    // Prevent default behavior
     e.preventDefault();
     e.stopPropagation();
     
     // Save current scroll position
-    const scrollPos = window.scrollY;
+    const scrollPos = {
+      x: window.pageXOffset || window.scrollX,
+      y: window.pageYOffset || window.scrollY
+    };
     
     if (typeof content === "string") {
-      navigator.clipboard.writeText(content)
-        .then(() => {
+      try {
+        // Use the modern clipboard API
+        await navigator.clipboard.writeText(content);
+        setCopied(true);
+        
+        // Ensure we restore the scroll position
+        window.scrollTo({
+          top: scrollPos.y,
+          left: scrollPos.x,
+          behavior: 'instant' // Use 'instant' instead of 'auto' for more reliable behavior
+        });
+        
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
+      } catch (err) {
+        // Fallback method if clipboard API fails
+        const textarea = document.createElement('textarea');
+        textarea.value = content;
+        textarea.style.position = 'fixed'; // Prevent scrolling
+        textarea.style.opacity = '0';
+        textarea.style.pointerEvents = 'none';
+        document.body.appendChild(textarea);
+        
+        try {
+          textarea.select();
+          document.execCommand('copy');
           setCopied(true);
-          
-          // Restore scroll position in case it changed
-          window.scrollTo({
-            top: scrollPos,
-            behavior: 'auto'
-          });
           
           setTimeout(() => {
             setCopied(false);
           }, 2000);
-        })
-        .catch(err => {
-          console.error('Failed to copy text: ', err);
-        });
+        } catch (error) {
+          console.error('Failed to copy text: ', error);
+        } finally {
+          document.body.removeChild(textarea);
+          // Restore scroll position after fallback method
+          window.scrollTo({
+            top: scrollPos.y,
+            left: scrollPos.x,
+            behavior: 'instant'
+          });
+        }
+      }
     }
-    
-    // Return false to prevent any other default behaviors
-    return false;
   };
 
   return (
@@ -149,10 +175,10 @@ export const Message = ({
             </div>
           )}
 
-          {/* Copy button for assistant messages - Fixed to prevent scrolling */}
+          {/* Copy button */}
           {!isUser && !isLoading && typeof content === "string" && (
             <button
-              type="button" // Explicitly set type to button to prevent form submission
+              type="button"
               onClick={handleCopy}
               className="absolute top-3 right-3 p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label={copied ? "Copied" : "Copy message"}
