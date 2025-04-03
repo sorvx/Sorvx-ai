@@ -1,144 +1,89 @@
+// components/custom/chat.tsx
 "use client";
 
-import { Attachment, Message as AIMessage } from "ai";
-import { useChat } from "ai/react";
-import { useState, useEffect, useRef } from "react";
-import { Message as PreviewMessage } from "@/components/custom/message";
-import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
-import { MultimodalInput } from "./multimodal-input";
-import { Overview } from "./overview";
+import { Message as UIMessage } from "ai";
+import { useEffect, useRef, useState } from "react";
+import { Send } from 'lucide-react';
 
-// Update the ExtendedMessage type to use AIMessage
-type ExtendedMessage = AIMessage & {
-  completed?: boolean;
-  isStreaming?: boolean;
-};
+import { Message } from "@/components/message";
+import { useChat } from "@/hooks/use-chat";
 
-export function Chat({
-  id,
-  initialMessages,
-}: {
+interface ChatProps {
   id: string;
-  initialMessages: Array<AIMessage>;
-}) {
-  // Use a unique key for each chat based on its id.
-  const LOCAL_STORAGE_KEY = `chat_messages_${id}`;
+  initialMessages: UIMessage[];
+}
 
-  // Load persisted messages (with the 'completed' property) on mount.
-  const [persistedMessages, setPersistedMessages] = useState<Array<ExtendedMessage>>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (stored) {
-      try {
-        const msgs: ExtendedMessage[] = JSON.parse(stored);
-        setPersistedMessages(msgs);
-      } catch (err) {
-        console.error("Failed to parse stored messages", err);
-      }
-    }
-  }, [LOCAL_STORAGE_KEY]);
-
-  // Use persisted messages if available; otherwise, use the provided initialMessages.
+export function Chat({ id, initialMessages }: ChatProps) {
   const {
     messages,
-    handleSubmit,
     input,
-    setInput,
-    append,
+    handleInputChange,
+    handleSubmit,
     isLoading,
-    stop,
   } = useChat({
     id,
-    body: { id },
-    initialMessages: persistedMessages.length > 0 ? persistedMessages : initialMessages,
-    maxSteps: 10,
-    onFinish: () => {
-      setIsTypingLastMessage(false);
-      lastMessageRef.current = null;
-      const updated = messages.map((m) => ({ ...m, completed: true })) as ExtendedMessage[];
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-    },
+    initialMessages,
+    api: "/api/chat",
   });
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const [isTypingLastMessage, setIsTypingLastMessage] = useState(false);
-  const lastMessageRef = useRef<string | null>(null);
-
+  // Scroll to bottom when messages change
   useEffect(() => {
-    if (isLoading && messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === "assistant") {
-        setIsTypingLastMessage(true);
-        lastMessageRef.current = lastMessage.id;
-      }
-    }
-  }, [isLoading, messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex flex-col h-screen pt-14 sm:pt-16 pb-4 px-4 sm:px-6">
-        <div className="flex flex-col h-full items-center w-full max-w-2xl mx-auto">
-          {/* Messages Container */}
-          <div
-            ref={messagesContainerRef}
-            className="flex flex-col gap-2 w-full grow overflow-y-auto"
+    <div className="container mx-auto px-4 max-w-4xl h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto py-4">
+        {messages.map((message, index) => (
+          <Message
+            key={message.id}
+            chatId={id}
+            messageId={message.id}
+            role={message.role}
+            content={message.content}
+            toolInvocations={message.toolInvocations}
+            attachments={message.attachments}
+            isFirstMessage={index === 0}
+          />
+        ))}
+        
+        {isLoading && (
+          <Message
+            chatId={id}
+            messageId="loading"
+            role="assistant"
+            content=""
+            isLoading={true}
+          />
+        )}
+        
+        <div ref={messagesEndRef} />
+      </div>
+      
+      <div className="sticky bottom-0 pb-8 pt-4 bg-gradient-to-t from-gray-50 dark:from-gray-900">
+        <form 
+          onSubmit={handleSubmit}
+          className="relative flex items-center max-w-3xl mx-auto"
+        >
+          <input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            placeholder="Type your message..."
+            className="w-full px-4 py-3 pr-12 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:focus:ring-violet-600 shadow-sm"
+          />
+          <button
+            type="submit"
+            disabled={!input.trim() || isLoading}
+            className="absolute right-2 p-2 rounded-full bg-violet-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-violet-700 transition-colors"
           >
-            {messages.length === 0 && <Overview />}
-            {messages.map((message, index) => {
-              const isLastMessage = index === messages.length - 1;
-              const isAssistantMessage = message.role === "assistant";
-              const shouldStream = isLastMessage && isAssistantMessage && isLoading;
-              
-              return (
-                <PreviewMessage
-                  key={message.id}
-                  chatId={id}
-                  messageId={message.id}
-                  role={message.role}
-                  content={message.content}
-                  attachments={message.experimental_attachments}
-                  toolInvocations={message.toolInvocations}
-                  isLoading={false}
-                  isStreaming={shouldStream}
-                  completed={!shouldStream}
-                />
-              );
-            })}
-
-            {/* Only show typing indicator for assistant messages */}
-            {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <PreviewMessage 
-                chatId={id} 
-                role="assistant" 
-                content="" 
-                isLoading={true}
-              />
-            )}
-
-            <div ref={messagesEndRef} className="shrink-0 min-h-[24px]" />
-          </div>
-
-          {/* Input Form */}
-          <form
-            className="flex flex-row gap-2 items-end w-full max-w-2xl mt-2"
-            onSubmit={handleSubmit}
-          >
-            <MultimodalInput
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              append={append}
-            />
-          </form>
-        </div>
-      </main>
+            <Send size={18} />
+            <span className="sr-only">Send message</span>
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
