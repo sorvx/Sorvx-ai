@@ -1,107 +1,69 @@
+// components/typing-effect.tsx
 "use client";
 
-import { motion, usePresence } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Markdown } from "./markdown";
 
 interface TypingEffectProps {
   text: string;
   messageId: string;
   chatId: string;
-  className?: string;
   speed?: number;
   isStreaming?: boolean;
 }
 
-export function TypingEffect({ 
-  text, 
-  messageId, 
-  chatId, 
-  className = "", 
+export function TypingEffect({
+  text,
+  messageId,
+  chatId,
   speed = 30,
-  isStreaming = false 
+  isStreaming = false,
 }: TypingEffectProps) {
   const [displayedText, setDisplayedText] = useState("");
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isPresent, safeToRemove] = usePresence();
-  const previousTextRef = useRef("");
-  const animationTimeoutRef = useRef<NodeJS.Timeout>();
+  const [isComplete, setIsComplete] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
   
+  // Check if this message has already been animated
   useEffect(() => {
-    if (!isPresent) {
-      safeToRemove();
-      return;
-    }
-
-    // Clear any existing animation timeout
-    if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current);
-    }
-
-    // Handle streaming updates
-    if (isStreaming) {
+    const animatedMessages = JSON.parse(localStorage.getItem("animatedMessages") || "{}");
+    const key = `${chatId}-${messageId}`;
+    
+    if (animatedMessages[key]) {
+      // If this message was already animated, show full text immediately
       setDisplayedText(text);
-      return;
+      setIsComplete(true);
+      setShouldAnimate(false);
     }
-
-    // Check if message was previously animated
-    const allAnimatedChats = JSON.parse(localStorage.getItem('animatedChats') || '{}');
-    const animatedMessages = allAnimatedChats[chatId] || {};
-
-    if (animatedMessages[messageId]) {
-      setDisplayedText(text);
-      return;
-    }
-
-    // Animate new messages
-    setIsAnimating(true);
-    let currentIndex = 0;
-    const fullText = text;
-
-    const animateText = () => {
-      if (currentIndex <= fullText.length) {
-        setDisplayedText(fullText.slice(0, currentIndex));
-        currentIndex++;
-        
-        animationTimeoutRef.current = setTimeout(animateText, speed);
+  }, [chatId, messageId, text]);
+  
+  // Handle the typing animation
+  useEffect(() => {
+    if (!shouldAnimate || isComplete) return;
+    
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText(text.substring(0, i + 1));
+        i++;
       } else {
-        setIsAnimating(false);
-        // Mark message as animated
-        allAnimatedChats[chatId] = {
-          ...animatedMessages,
-          [messageId]: true
-        };
-        localStorage.setItem('animatedChats', JSON.stringify(allAnimatedChats));
+        clearInterval(interval);
+        setIsComplete(true);
+        
+        // Mark this message as animated in localStorage
+        const animatedMessages = JSON.parse(localStorage.getItem("animatedMessages") || "{}");
+        const key = `${chatId}-${messageId}`;
+        animatedMessages[key] = true;
+        localStorage.setItem("animatedMessages", JSON.stringify(animatedMessages));
       }
-    };
-
-    animateText();
-
-    return () => {
-      if (animationTimeoutRef.current) {
-        clearTimeout(animationTimeoutRef.current);
-      }
-    };
-  }, [text, speed, isPresent, safeToRemove, messageId, chatId, isStreaming]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className={className}
-    >
-      <div className="prose dark:prose-invert max-w-none">
-        <Markdown>{displayedText || " "}</Markdown>
-      </div>
-      {isAnimating && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 0.8, repeat: Infinity }}
-          className="inline-block w-0.5 h-4 ml-0.5 bg-current"
-        />
-      )}
-    </motion.div>
-  );
-} 
+    }, speed);
+    
+    return () => clearInterval(interval);
+  }, [text, speed, chatId, messageId, shouldAnimate, isComplete]);
+  
+  // For streaming messages, we don't want to animate
+  if (isStreaming) {
+    return <Markdown>{text}</Markdown>;
+  }
+  
+  return <Markdown>{displayedText}</Markdown>;
+}
