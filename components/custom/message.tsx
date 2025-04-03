@@ -16,8 +16,27 @@ import { FlightStatus } from "../flights/flight-status";
 import { ListFlights } from "../flights/list-flights";
 import { SelectSeats } from "../flights/select-seats";
 import { VerifyPayment } from "../flights/verify-payment";
-import { TypingDots } from "./typing-dots";
 import { TypingEffect } from "./typing-effect";
+
+// TypingDots component inline
+function TypingDots() {
+  return (
+    <div className="flex space-x-1.5 my-2">
+      {[0, 1, 2].map((dot) => (
+        <motion.div
+          key={dot}
+          className="w-1.5 h-1.5 bg-zinc-500 dark:bg-zinc-400 rounded-full"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            delay: dot * 0.15,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 interface MessageProps {
   chatId: string;
@@ -47,37 +66,16 @@ export const Message = ({
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
 
-  // Fixed copy function to prevent scrolling
   const handleCopy = (e: React.MouseEvent) => {
-    // Prevent any default behavior
-    e.preventDefault();
     e.stopPropagation();
-    
-    // Save current scroll position
-    const scrollPos = window.scrollY;
-    
+    e.preventDefault();
+
     if (typeof content === "string") {
-      navigator.clipboard.writeText(content)
-        .then(() => {
-          setCopied(true);
-          
-          // Restore scroll position in case it changed
-          window.scrollTo({
-            top: scrollPos,
-            behavior: 'auto'
-          });
-          
-          setTimeout(() => {
-            setCopied(false);
-          }, 2000);
-        })
-        .catch(err => {
-          console.error('Failed to copy text: ', err);
-        });
+      navigator.clipboard.writeText(content).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
     }
-    
-    // Return false to prevent any other default behaviors
-    return false;
   };
 
   return (
@@ -116,44 +114,42 @@ export const Message = ({
               : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 py-4 px-5 rounded-2xl rounded-tl-sm shadow-md border border-gray-100 dark:border-gray-700"
           }`}
         >
-          // components/message.tsx (partial update)
-// Inside the render function, replace the content rendering part:
+          {/* Message content */}
+          {isLoading ? (
+            <div className="flex items-center">
+              <TypingDots />
+            </div>
+          ) : (
+            <div
+              className={`${
+                isUser
+                  ? "text-sm font-medium"
+                  : "text-base leading-relaxed"
+              }`}
+            >
+              {content && typeof content === "string" ? (
+                isUser ? (
+                  <Markdown>{content}</Markdown>
+                ) : isStreaming ? (
+                  <TypingEffect
+                    text={content}
+                    messageId={messageId}
+                    chatId={chatId}
+                    speed={25}
+                    isStreaming={true}
+                  />
+                ) : (
+                  <Markdown>{content}</Markdown>
+                )
+              ) : (
+                <div>{content}</div>
+              )}
+            </div>
+          )}
 
-{/* Message content */}
-{isLoading ? (
-  <div className="flex items-center">
-    <TypingDots />
-  </div>
-) : (
-  <div
-    className={`${
-      isUser
-        ? "text-sm font-medium"
-        : "text-base leading-relaxed"
-    }`}
-  >
-    {content && typeof content === "string" ? (
-      isUser ? (
-        <Markdown>{content}</Markdown>
-      ) : (
-        <TypingEffect
-          text={content}
-          messageId={messageId}
-          chatId={chatId}
-          speed={30}
-          isStreaming={isStreaming}
-        />
-      )
-    ) : (
-      <div>{content}</div>
-    )}
-  </div>
-)}
-
-          {/* Copy button for assistant messages - Fixed to prevent scrolling */}
+          {/* Copy button for assistant messages */}
           {!isUser && !isLoading && typeof content === "string" && (
             <button
-              type="button" // Explicitly set type to button to prevent form submission
               onClick={handleCopy}
               className="absolute top-3 right-3 p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label={copied ? "Copied" : "Copy message"}
