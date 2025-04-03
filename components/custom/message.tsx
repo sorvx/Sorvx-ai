@@ -116,38 +116,39 @@ export const Message = ({
               : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 py-4 px-5 rounded-2xl rounded-tl-sm shadow-md border border-gray-100 dark:border-gray-700"
           }`}
         >
-          {/* Message content */}
-          {isLoading ? (
-            <div className="flex items-center">
-              <TypingDots />
-            </div>
-          ) : (
-            <div
-              className={`${
-                isUser
-                  ? "text-sm font-medium"
-                  : "text-base leading-relaxed"
-              }`}
-            >
-              {content && typeof content === "string" ? (
-                isUser ? (
-                  <Markdown>{content}</Markdown>
-                ) : isStreaming ? (
-                  <TypingEffect
-                    text={content}
-                    messageId={messageId}
-                    chatId={chatId}
-                    speed={25}
-                    isStreaming={true}
-                  />
-                ) : (
-                  <Markdown>{content}</Markdown>
-                )
-              ) : (
-                <div>{content}</div>
-              )}
-            </div>
-          )}
+          // components/message.tsx (partial update)
+// Inside the render function, replace the content rendering part:
+
+{/* Message content */}
+{isLoading ? (
+  <div className="flex items-center">
+    <TypingDots />
+  </div>
+) : (
+  <div
+    className={`${
+      isUser
+        ? "text-sm font-medium"
+        : "text-base leading-relaxed"
+    }`}
+  >
+    {content && typeof content === "string" ? (
+      isUser ? (
+        <Markdown>{content}</Markdown>
+      ) : (
+        <TypingEffect
+          text={content}
+          messageId={messageId}
+          chatId={chatId}
+          speed={30}
+          isStreaming={isStreaming}
+        />
+      )
+    ) : (
+      <div>{content}</div>
+    )}
+  </div>
+)}
 
           {/* Copy button for assistant messages - Fixed to prevent scrolling */}
           {!isUser && !isLoading && typeof content === "string" && (
