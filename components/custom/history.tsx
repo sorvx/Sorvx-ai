@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Plus, Trash2, MessageSquare, Loader2 } from 'lucide-react';
+import { Clock, Plus, Trash2, MessageSquare, Loader2, X } from 'lucide-react';
 
 import { Chat } from "@/db/schema";
 import { fetcher, cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose,
 } from "../ui/sheet";
 
 export const History = ({ user }: { user: User | undefined }) => {
@@ -119,11 +120,23 @@ export const History = ({ user }: { user: User | undefined }) => {
           side="left"
           className="w-[320px] sm:w-[380px] p-0 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-800"
         >
-          <SheetHeader className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
+          <SheetHeader className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center">
             <SheetTitle className="text-lg font-semibold flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               Chat History
             </SheetTitle>
+            
+            {/* Close button with X icon */}
+            <SheetClose asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+                aria-label="Close history panel"
+              >
+                <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              </Button>
+            </SheetClose>
           </SheetHeader>
           
           <div className="flex flex-col h-[calc(100vh-65px)] overflow-hidden">
