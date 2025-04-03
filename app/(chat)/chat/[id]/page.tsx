@@ -31,6 +31,5 @@ export default async function Page({ params }: { params: any }) {
     return notFound();
   }
 
-  // Pass the chat ID and messages to the client component
   return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
 }
