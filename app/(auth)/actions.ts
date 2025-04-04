@@ -4,7 +4,7 @@ import { z } from "zod"
 
 import { createPasswordResetToken, createUser, getUser, resetPassword as dbResetPassword } from "@/db/queries"
 import { sendPasswordResetEmail } from "@/lib/email"
-
+import { authConfig } from "./auth.config.ts"
 import { signIn } from "./auth"
 
 const authFormSchema = z.object({
