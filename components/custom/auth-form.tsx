@@ -1,24 +1,28 @@
+"use client"
+
+import type React from "react"
+
 // components/AuthForm.tsx
-import { useState } from "react";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Eye, EyeOff } from "lucide-react"
 
 interface AuthFormProps {
-  action: (data: FormData) => void;
-  children: React.ReactNode;
-  defaultEmail?: string;
+  action: (data: FormData) => void
+  children: React.ReactNode
+  defaultEmail?: string
 }
 
 export function AuthForm({ action, children, defaultEmail = "" }: AuthFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
 
   // Wrap the provided action with our event handler that converts the event into FormData.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    action(formData);
-  };
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    action(formData)
+  }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-4 sm:px-16">
@@ -61,5 +65,6 @@ export function AuthForm({ action, children, defaultEmail = "" }: AuthFormProps)
       </div>
       {children}
     </form>
-  );
+  )
 }
+

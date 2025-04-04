@@ -1,12 +1,11 @@
-import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
-import fs from "fs";
+import { config } from "dotenv"
+import { drizzle } from "drizzle-orm/postgres-js"
+import { migrate } from "drizzle-orm/postgres-js/migrator"
+import postgres from "postgres"
 
 config({
   path: ".env.local",
-});
+})
 
 /*const CA_CERT = `-----BEGIN CERTIFICATE-----
 MIIETTCCArWgAwIBAgIUMVFwAcPyApGsBLG6qiEEuo9xfS8wDQYJKoZIhvcNAQEM
@@ -37,34 +36,35 @@ rA==
 
 const runMigrate = async () => {
   if (!process.env.POSTGRES_URL) {
-    throw new Error("POSTGRES_URL is not defined");
+    throw new Error("POSTGRES_URL is not defined")
   }
 
   const connection = postgres(process.env.POSTGRES_URL, {
     max: 1,
     //ssl: { ca: CA_CERT }, // Explicitly pass the CA cert
-  });
+  })
 
-  const db = drizzle(connection);
+  const db = drizzle(connection)
 
-  console.log("⏳ Running migrations...");
+  console.log("⏳ Running migrations...")
 
   try {
-    const start = Date.now();
-    await migrate(db, { migrationsFolder: "./lib/drizzle" });
-    const end = Date.now();
-    console.log("✅ Migrations completed in", end - start, "ms");
+    const start = Date.now()
+    await migrate(db, { migrationsFolder: "./lib/drizzle" })
+    const end = Date.now()
+    console.log("✅ Migrations completed in", end - start, "ms")
   } catch (error) {
-    console.error("❌ Migration failed");
-    console.error(error);
+    console.error("❌ Migration failed")
+    console.error(error)
   } finally {
-    await connection.end();
-    process.exit(0);
+    await connection.end()
+    process.exit(0)
   }
-};
+}
 
 runMigrate().catch((err) => {
-  console.error("❌ Migration failed");
-  console.error(err);
-  process.exit(1);
-});
+  console.error("❌ Migration failed")
+  console.error(err)
+  process.exit(1)
+})
+

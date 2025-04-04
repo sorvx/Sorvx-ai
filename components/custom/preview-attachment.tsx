@@ -1,15 +1,15 @@
-import { Attachment } from "ai";
+import type { Attachment } from "ai"
 
-import { LoaderIcon } from "./icons";
+import { LoaderIcon } from "./icons"
 
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
 }: {
-  attachment: Attachment;
-  isUploading?: boolean;
+  attachment: Attachment
+  isUploading?: boolean
 }) => {
-  const { name, url, contentType } = attachment;
+  const { name, url, contentType } = attachment
 
   return (
     <div className="flex flex-col gap-2 max-w-16">
@@ -24,9 +24,7 @@ export const PreviewAttachment = ({
               className="rounded-md size-full object-cover"
             />
           ) : (
-            <div className="text-xs text-center p-2">
-              {contentType.split("/")[1].toUpperCase()}
-            </div>
+            <div className="text-xs text-center p-2">{contentType.split("/")[1].toUpperCase()}</div>
           )
         ) : (
           <div className="text-xs text-center p-2">File</div>
@@ -40,5 +38,6 @@ export const PreviewAttachment = ({
       </div>
       <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
     </div>
-  );
-};
+  )
+}
+

@@ -2,8 +2,8 @@ export function VerifyPayment({
   result: { hasCompletedPayment },
 }: {
   result: {
-    hasCompletedPayment: boolean;
-  };
+    hasCompletedPayment: boolean
+  }
 }) {
   return (
     <div>
@@ -11,5 +11,6 @@ export function VerifyPayment({
         ? "Your payment transaction has been verified!"
         : "Unable to verify your payment, please try again!"}
     </div>
-  );
+  )
 }
+

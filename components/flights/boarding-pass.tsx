@@ -1,5 +1,5 @@
-import { format } from "date-fns";
-import { FlashlightIcon, PlaneTakeoffIcon } from "lucide-react";
+import { format } from "date-fns"
+import { PlaneTakeoffIcon } from "lucide-react"
 
 const SAMPLE = {
   reservationId: "RES123456",
@@ -22,19 +22,15 @@ const SAMPLE = {
     gate: "B22",
   },
   passengerName: "John Doe",
-};
+}
 
 export function DisplayBoardingPass({ boardingPass = SAMPLE }) {
   return (
     <div className="bg-yellow-200 p-4 rounded-lg flex flex-col gap-2">
       <div className="flex flex-row justify-between items-center relative">
         <div className="flex flex-col gap-0.5">
-          <div className="text-yellow-800 text-sm sm:text-base">
-            {boardingPass.departure.cityName}
-          </div>
-          <div className="text-yellow-800 text-2xl sm:text-3xl font-semibold">
-            {boardingPass.departure.airportCode}
-          </div>
+          <div className="text-yellow-800 text-sm sm:text-base">{boardingPass.departure.cityName}</div>
+          <div className="text-yellow-800 text-2xl sm:text-3xl font-semibold">{boardingPass.departure.airportCode}</div>
         </div>
 
         <div className="absolute w-full flex flex-row justify-center">
@@ -44,9 +40,7 @@ export function DisplayBoardingPass({ boardingPass = SAMPLE }) {
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <div className="text-yellow-800 text-sm sm:text-base">
-            {boardingPass.arrival.cityName}
-          </div>
+          <div className="text-yellow-800 text-sm sm:text-base">{boardingPass.arrival.cityName}</div>
           <div className="text-yellow-800 text-2xl sm:text-3xl font-semibold text-right">
             {boardingPass.arrival.airportCode}
           </div>
@@ -57,32 +51,21 @@ export function DisplayBoardingPass({ boardingPass = SAMPLE }) {
 
       <div className="flex flex-row justify-between">
         <div className="flex flex-col gap-0.5">
-          <div className="text-yellow-900 text-sm font-medium sm:text-base">
-            Passenger
-          </div>
-          <div className="text-lg text-yellow-700">
-            {boardingPass.passengerName}
-          </div>
+          <div className="text-yellow-900 text-sm font-medium sm:text-base">Passenger</div>
+          <div className="text-lg text-yellow-700">{boardingPass.passengerName}</div>
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <div className="text-yellow-900 text-sm font-medium sm:text-base">
-            Gate
-          </div>
-          <div className="text-lg text-yellow-700">
-            {boardingPass.departure.gate}
-          </div>
+          <div className="text-yellow-900 text-sm font-medium sm:text-base">Gate</div>
+          <div className="text-lg text-yellow-700">{boardingPass.departure.gate}</div>
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <div className="text-yellow-900 text-sm font-medium sm:text-base">
-            Boards
-          </div>
-          <div className="text-lg text-yellow-700">
-            {format(new Date(boardingPass.departure.timestamp), "h:mma")}
-          </div>
+          <div className="text-yellow-900 text-sm font-medium sm:text-base">Boards</div>
+          <div className="text-lg text-yellow-700">{format(new Date(boardingPass.departure.timestamp), "h:mma")}</div>
         </div>
       </div>
     </div>
-  );
+  )
 }
+

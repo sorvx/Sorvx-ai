@@ -1,34 +1,27 @@
-import { convertToCoreMessages, Message, streamText } from "ai";
-import { z } from "zod";
+import { convertToCoreMessages, type Message, streamText } from "ai"
+import { z } from "zod"
 
-import { geminiProModel } from "@/ai";
+import { geminiProModel } from "@/ai"
 import {
   generateCodeExplanation,
   generateCodeSuggestion,
   generateBugFix,
   generateCodeReview,
   generateTestCases,
-} from "@/ai/actions";
-import { auth } from "@/app/(auth)/auth";
-import {
-  deleteChatById,
-  getChatById,
-  saveChat,
-} from "@/db/queries";
+} from "@/ai/actions"
+import { auth } from "@/app/(auth)/auth"
+import { deleteChatById, getChatById, saveChat } from "@/db/queries"
 
 export async function POST(request: Request) {
-  const { id, messages }: { id: string; messages: Array<Message> } =
-    await request.json();
+  const { id, messages }: { id: string; messages: Array<Message> } = await request.json()
 
-  const session = await auth();
+  const session = await auth()
 
   if (!session) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response("Unauthorized", { status: 401 })
   }
 
-  const coreMessages = convertToCoreMessages(messages).filter(
-    (message) => message.content.length > 0,
-  );
+  const coreMessages = convertToCoreMessages(messages).filter((message) => message.content.length > 0)
 
   const result = await streamText({
     model: geminiProModel,
@@ -64,7 +57,7 @@ export async function POST(request: Request) {
           language: z.string().describe("Programming language"),
         }),
         execute: async ({ code, language }) => {
-          return await generateCodeExplanation({ code, language });
+          return await generateCodeExplanation({ code, language })
         },
       },
       suggestCode: {
@@ -75,7 +68,7 @@ export async function POST(request: Request) {
           context: z.string().optional().describe("Additional context"),
         }),
         execute: async ({ task, language, context }) => {
-          return await generateCodeSuggestion({ task, language, context });
+          return await generateCodeSuggestion({ task, language, context })
         },
       },
       fixBug: {
@@ -86,7 +79,7 @@ export async function POST(request: Request) {
           language: z.string().describe("Programming language"),
         }),
         execute: async ({ code, error, language }) => {
-          return await generateBugFix({ code, error, language });
+          return await generateBugFix({ code, error, language })
         },
       },
       reviewCode: {
@@ -96,7 +89,7 @@ export async function POST(request: Request) {
           language: z.string().describe("Programming language"),
         }),
         execute: async ({ code, language }) => {
-          return await generateCodeReview({ code, language });
+          return await generateCodeReview({ code, language })
         },
       },
       generateTests: {
@@ -106,7 +99,7 @@ export async function POST(request: Request) {
           language: z.string().describe("Programming language"),
         }),
         execute: async ({ code, language }) => {
-          return await generateTestCases({ code, language });
+          return await generateTestCases({ code, language })
         },
       },
     },
@@ -117,9 +110,9 @@ export async function POST(request: Request) {
             id,
             messages: [...coreMessages, ...responseMessages],
             userId: session.user.id,
-          });
+          })
         } catch (error) {
-          console.error("Failed to save chat");
+          console.error("Failed to save chat")
         }
       }
     },
@@ -127,38 +120,39 @@ export async function POST(request: Request) {
       isEnabled: true,
       functionId: "stream-text",
     },
-  });
+  })
 
-  return result.toDataStreamResponse({});
+  return result.toDataStreamResponse({})
 }
 
 export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get("id")
 
   if (!id) {
-    return new Response("Not Found", { status: 404 });
+    return new Response("Not Found", { status: 404 })
   }
 
-  const session = await auth();
+  const session = await auth()
 
   if (!session || !session.user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response("Unauthorized", { status: 401 })
   }
 
   try {
-    const chat = await getChatById({ id });
+    const chat = await getChatById({ id })
 
     if (chat.userId !== session.user.id) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response("Unauthorized", { status: 401 })
     }
 
-    await deleteChatById({ id });
+    await deleteChatById({ id })
 
-    return new Response("Chat deleted", { status: 200 });
+    return new Response("Chat deleted", { status: 200 })
   } catch (error) {
     return new Response("An error occurred while processing your request", {
       status: 500,
-    });
+    })
   }
 }
+

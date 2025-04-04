@@ -1,35 +1,37 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import { Attachment, ToolInvocation } from "ai";
-import { motion } from "framer-motion";
-import { ReactNode, useState } from "react";
-import { Check, Copy, User } from 'lucide-react';
+import type React from "react"
 
-import { Markdown } from "./markdown";
-import { PreviewAttachment } from "./preview-attachment";
-import { Weather } from "./weather";
-import { AuthorizePayment } from "../flights/authorize-payment";
-import { DisplayBoardingPass } from "../flights/boarding-pass";
-import { CreateReservation } from "../flights/create-reservation";
-import { FlightStatus } from "../flights/flight-status";
-import { ListFlights } from "../flights/list-flights";
-import { SelectSeats } from "../flights/select-seats";
-import { VerifyPayment } from "../flights/verify-payment";
-import { TypingDots } from "./typing-dots";
-import { TypingEffect } from "./typing-effect";
+import Image from "next/image"
+import type { Attachment, ToolInvocation } from "ai"
+import { motion } from "framer-motion"
+import { type ReactNode, useState } from "react"
+import { Check, Copy, User } from "lucide-react"
+
+import { Markdown } from "./markdown"
+import { PreviewAttachment } from "./preview-attachment"
+import { Weather } from "./weather"
+import { AuthorizePayment } from "../flights/authorize-payment"
+import { DisplayBoardingPass } from "../flights/boarding-pass"
+import { CreateReservation } from "../flights/create-reservation"
+import { FlightStatus } from "../flights/flight-status"
+import { ListFlights } from "../flights/list-flights"
+import { SelectSeats } from "../flights/select-seats"
+import { VerifyPayment } from "../flights/verify-payment"
+import { TypingDots } from "./typing-dots"
+import { TypingEffect } from "./typing-effect"
 
 interface MessageProps {
-  chatId: string;
-  messageId?: string;
-  role: "function" | "system" | "user" | "assistant" | "data" | "tool";
-  content: string | ReactNode;
-  toolInvocations?: Array<ToolInvocation>;
-  attachments?: Array<Attachment>;
-  isFirstMessage?: boolean;
-  isLoading?: boolean;
-  isStreaming?: boolean;
-  completed?: boolean;
+  chatId: string
+  messageId?: string
+  role: "function" | "system" | "user" | "assistant" | "data" | "tool"
+  content: string | ReactNode
+  toolInvocations?: Array<ToolInvocation>
+  attachments?: Array<Attachment>
+  isFirstMessage?: boolean
+  isLoading?: boolean
+  isStreaming?: boolean
+  completed?: boolean
 }
 
 export const Message = ({
@@ -44,67 +46,67 @@ export const Message = ({
   isStreaming = false,
   completed = false,
 }: MessageProps) => {
-  const isUser = role === "user";
-  const [copied, setCopied] = useState(false);
+  const isUser = role === "user"
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = async (e: React.MouseEvent) => {
     // Prevent default behavior
-    e.preventDefault();
-    e.stopPropagation();
-    
+    e.preventDefault()
+    e.stopPropagation()
+
     // Save current scroll position
     const scrollPos = {
       x: window.pageXOffset || window.scrollX,
-      y: window.pageYOffset || window.scrollY
-    };
-    
+      y: window.pageYOffset || window.scrollY,
+    }
+
     if (typeof content === "string") {
       try {
         // Use the modern clipboard API
-        await navigator.clipboard.writeText(content);
-        setCopied(true);
-        
+        await navigator.clipboard.writeText(content)
+        setCopied(true)
+
         // Ensure we restore the scroll position
         window.scrollTo({
           top: scrollPos.y,
           left: scrollPos.x,
-          behavior: 'instant' // Use 'instant' instead of 'auto' for more reliable behavior
-        });
-        
+          behavior: "instant", // Use 'instant' instead of 'auto' for more reliable behavior
+        })
+
         setTimeout(() => {
-          setCopied(false);
-        }, 2000);
+          setCopied(false)
+        }, 2000)
       } catch (err) {
         // Fallback method if clipboard API fails
-        const textarea = document.createElement('textarea');
-        textarea.value = content;
-        textarea.style.position = 'fixed'; // Prevent scrolling
-        textarea.style.opacity = '0';
-        textarea.style.pointerEvents = 'none';
-        document.body.appendChild(textarea);
-        
+        const textarea = document.createElement("textarea")
+        textarea.value = content
+        textarea.style.position = "fixed" // Prevent scrolling
+        textarea.style.opacity = "0"
+        textarea.style.pointerEvents = "none"
+        document.body.appendChild(textarea)
+
         try {
-          textarea.select();
-          document.execCommand('copy');
-          setCopied(true);
-          
+          textarea.select()
+          document.execCommand("copy")
+          setCopied(true)
+
           setTimeout(() => {
-            setCopied(false);
-          }, 2000);
+            setCopied(false)
+          }, 2000)
         } catch (error) {
-          console.error('Failed to copy text: ', error);
+          console.error("Failed to copy text: ", error)
         } finally {
-          document.body.removeChild(textarea);
+          document.body.removeChild(textarea)
           // Restore scroll position after fallback method
           window.scrollTo({
             top: scrollPos.y,
             left: scrollPos.x,
-            behavior: 'instant'
-          });
+            behavior: "instant",
+          })
         }
       }
     }
-  };
+  }
 
   return (
     <motion.div
@@ -118,13 +120,7 @@ export const Message = ({
       {/* Avatar */}
       {!isUser && (
         <div className="w-10 h-10 rounded-full overflow-hidden shadow-md flex-shrink-0 border border-gray-100 dark:border-gray-800">
-          <Image
-            src="/images/ai.png"
-            height={40}
-            width={40}
-            alt="Assistant"
-            className="object-cover"
-          />
+          <Image src="/images/ai.png" height={40} width={40} alt="Assistant" className="object-cover" />
         </div>
       )}
 
@@ -148,24 +144,12 @@ export const Message = ({
               <TypingDots />
             </div>
           ) : (
-            <div
-              className={`${
-                isUser
-                  ? "text-sm font-medium"
-                  : "text-base leading-relaxed"
-              }`}
-            >
+            <div className={`${isUser ? "text-sm font-medium" : "text-base leading-relaxed"}`}>
               {content && typeof content === "string" ? (
                 isUser ? (
                   <Markdown>{content}</Markdown>
                 ) : isStreaming ? (
-                  <TypingEffect
-                    text={content}
-                    messageId={messageId}
-                    chatId={chatId}
-                    speed={25}
-                    isStreaming={true}
-                  />
+                  <TypingEffect text={content} messageId={messageId} chatId={chatId} speed={25} isStreaming={true} />
                 ) : (
                   <Markdown>{content}</Markdown>
                 )
@@ -183,11 +167,7 @@ export const Message = ({
               className="absolute top-3 right-3 p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label={copied ? "Copied" : "Copy message"}
             >
-              {copied ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <Copy size={16} />
-              )}
+              {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
             </button>
           )}
         </div>
@@ -196,11 +176,11 @@ export const Message = ({
         {toolInvocations && toolInvocations.length > 0 && (
           <div className="flex flex-col gap-4 overflow-x-auto thin-scrollbar mt-1 max-w-full">
             {toolInvocations.map((toolInvocation) => {
-              const { toolName, toolCallId, state } = toolInvocation;
+              const { toolName, toolCallId, state } = toolInvocation
               if (state === "result") {
-                const { result } = toolInvocation;
+                const { result } = toolInvocation
                 return (
-                  <div 
+                  <div
                     key={toolCallId}
                     className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden"
                   >
@@ -228,11 +208,11 @@ export const Message = ({
                       </pre>
                     )}
                   </div>
-                );
+                )
               } else {
                 return (
-                  <div 
-                    key={toolCallId} 
+                  <div
+                    key={toolCallId}
                     className="skeleton bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden"
                   >
                     {toolName === "getWeather" ? (
@@ -251,7 +231,7 @@ export const Message = ({
                       <DisplayBoardingPass />
                     ) : null}
                   </div>
-                );
+                )
               }
             })}
           </div>
@@ -261,7 +241,10 @@ export const Message = ({
         {attachments && attachments.length > 0 && (
           <div className="flex flex-row gap-3 overflow-x-auto thin-scrollbar mt-2 pb-2">
             {attachments.map((attachment) => (
-              <div key={attachment.url} className="rounded-lg overflow-hidden shadow-md border border-gray-100 dark:border-gray-700">
+              <div
+                key={attachment.url}
+                className="rounded-lg overflow-hidden shadow-md border border-gray-100 dark:border-gray-700"
+              >
                 <PreviewAttachment attachment={attachment} />
               </div>
             ))}
@@ -276,5 +259,6 @@ export const Message = ({
         </div>
       )}
     </motion.div>
-  );
-};
+  )
+}
+

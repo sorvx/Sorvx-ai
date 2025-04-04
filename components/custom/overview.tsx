@@ -1,8 +1,8 @@
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
+"use client"
 
-import { LogoGoogle, MessageIcon, VercelIcon } from "./icons";
+import { motion } from "framer-motion"
+import Image from "next/image"
+import Link from "next/link"
 
 export const Overview = () => {
   return (
@@ -16,29 +16,17 @@ export const Overview = () => {
     >
       <div className="border-none bg-muted/50 rounded-2xl p-6 flex flex-col gap-6">
         <div className="flex items-center justify-center">
-          <Image
-            src="/images/ai.png"
-            height={24}
-            width={24}
-            alt="sorvx logo"
-            className="rounded-sm"
-          />
+          <Image src="/images/ai.png" height={24} width={24} alt="sorvx logo" className="rounded-sm" />
         </div>
 
         <div className="space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
           <p className="leading-relaxed">
-            This is a Chatbot Named Sorvx AI powered by the Sorvx-S2-70B 
-            model built by Sorvx Labs. It uses the{" "}
-            <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
-              streamText
-            </code>{" "}
-            function in the server and the{" "}
-            <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
-              useChat
-            </code>{" "}
-            hook on the client to create a seamless chat experience.
+            This is a Chatbot Named Sorvx AI powered by the Sorvx-S2-70B model built by Sorvx Labs. It uses the{" "}
+            <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">streamText</code> function in the server
+            and the <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">useChat</code> hook on the client
+            to create a seamless chat experience.
           </p>
-          
+
           <p className="leading-relaxed">
             This AI ChatBot is developed and maintained by{" "}
             <Link
@@ -54,5 +42,6 @@ export const Overview = () => {
         </div>
       </div>
     </motion.div>
-  );
-};
+  )
+}
+

@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useChat } from "ai/react";
-import cx from "classnames";
+import { useChat } from "ai/react"
+import cx from "classnames"
 
 interface Seat {
-  seatNumber: string;
-  priceInUSD: number;
-  isAvailable: boolean;
+  seatNumber: string
+  priceInUSD: number
+  isAvailable: boolean
 }
 
 const SAMPLE: { seats: Seat[][] } = {
@@ -52,20 +52,20 @@ const SAMPLE: { seats: Seat[][] } = {
       { seatNumber: "5F", priceInUSD: 150, isAvailable: false },
     ],
   ],
-};
+}
 
 export function SelectSeats({
   chatId,
   availability = SAMPLE,
 }: {
-  chatId: string;
-  availability?: typeof SAMPLE;
+  chatId: string
+  availability?: typeof SAMPLE
 }) {
   const { append } = useChat({
     id: chatId,
     body: { id: chatId },
     maxSteps: 5,
-  });
+  })
 
   return (
     <div className="flex flex-col gap-2 bg-muted rounded-lg">
@@ -98,7 +98,7 @@ export function SelectSeats({
                     append({
                       role: "user",
                       content: `I'd like to go with seat ${seat.seatNumber}`,
-                    });
+                    })
                   }}
                   className={cx(
                     "cursor-pointer group relative size-8 sm:size-10 flex-shrink-0 flex rounded-sm flex-row items-center justify-center",
@@ -110,13 +110,10 @@ export function SelectSeats({
                 >
                   <div className="text-xs text-white">${seat.priceInUSD}</div>
                   <div
-                    className={cx(
-                      "absolute -top-1 h-2 w-full scale-125 rounded-sm",
-                      {
-                        "bg-blue-600 group-hover:bg-pink-600": seat.isAvailable,
-                        "bg-zinc-600 cursor-not-allowed": !seat.isAvailable,
-                      },
-                    )}
+                    className={cx("absolute -top-1 h-2 w-full scale-125 rounded-sm", {
+                      "bg-blue-600 group-hover:bg-pink-600": seat.isAvailable,
+                      "bg-zinc-600 cursor-not-allowed": !seat.isAvailable,
+                    })}
                   />
                 </div>
               </>
@@ -128,17 +125,14 @@ export function SelectSeats({
       <div className="flex flex-row gap-4 justify-center pb-6">
         <div className="flex flex-row items-center gap-2">
           <div className="size-4 bg-blue-500 rounded-sm" />
-          <div className="text text-muted-foreground font-medium text-sm">
-            Available
-          </div>
+          <div className="text text-muted-foreground font-medium text-sm">Available</div>
         </div>
         <div className="flex flex-row items-center gap-2">
           <div className="size-4 bg-gray-500 rounded-sm" />
-          <div className="text text-muted-foreground font-medium text-sm">
-            Unavailable
-          </div>
+          <div className="text text-muted-foreground font-medium text-sm">Unavailable</div>
         </div>
       </div>
     </div>
-  );
+  )
 }
+

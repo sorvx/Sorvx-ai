@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useChat } from "ai/react";
-import { differenceInHours, format } from "date-fns";
+import { useChat } from "ai/react"
+import { differenceInHours, format } from "date-fns"
 
 const SAMPLE = {
   flights: [
@@ -71,20 +71,20 @@ const SAMPLE = {
       numberOfStops: 1,
     },
   ],
-};
+}
 
 export function ListFlights({
   chatId,
   results = SAMPLE,
 }: {
-  chatId: string;
-  results?: typeof SAMPLE;
+  chatId: string
+  results?: typeof SAMPLE
 }) {
   const { append } = useChat({
     id: chatId,
     body: { id: chatId },
     maxSteps: 5,
-  });
+  })
 
   return (
     <div className="rounded-lg bg-muted px-4 py-1.5 flex flex-col">
@@ -96,18 +96,14 @@ export function ListFlights({
             append({
               role: "user",
               content: `I would like to book the ${flight.airlines} one!`,
-            });
+            })
           }}
         >
           <div className="flex flex-col w-full gap-0.5 justify-between">
             <div className="flex flex-row gap-0.5 text-base sm:text-base font-medium group-hover:underline">
-              <div className="text">
-                {format(new Date(flight.departure.timestamp), "h:mm a")}
-              </div>
+              <div className="text">{format(new Date(flight.departure.timestamp), "h:mm a")}</div>
               <div className="no-skeleton">–</div>
-              <div className="text">
-                {format(new Date(flight.arrival.timestamp), "h:mm a")}
-              </div>
+              <div className="text">{format(new Date(flight.arrival.timestamp), "h:mm a")}</div>
             </div>
             <div className="text w-fit hidden sm:flex text-sm text-muted-foreground flex-row gap-2">
               <div>{flight.airlines.join(", ")}</div>
@@ -120,11 +116,7 @@ export function ListFlights({
           <div className="flex flex-col gap-0.5 justify-between">
             <div className="flex flex-row gap-2">
               <div className="text-base sm:text-base">
-                {differenceInHours(
-                  new Date(flight.arrival.timestamp),
-                  new Date(flight.departure.timestamp),
-                )}{" "}
-                hr
+                {differenceInHours(new Date(flight.arrival.timestamp), new Date(flight.departure.timestamp))} hr
               </div>
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground flex flex-row">
@@ -136,16 +128,13 @@ export function ListFlights({
 
           <div className="flex flex-col w-32 items-end gap-0.5">
             <div className="flex flex-row gap-2">
-              <div className="text-base sm:text-base text-emerald-600 dark:text-emerald-500">
-                ${flight.priceInUSD}
-              </div>
+              <div className="text-base sm:text-base text-emerald-600 dark:text-emerald-500">${flight.priceInUSD}</div>
             </div>
-            <div className="text-xs sm:text-sm text-muted-foreground flex flex-row">
-              Round Trip
-            </div>
+            <div className="text-xs sm:text-sm text-muted-foreground flex flex-row">Round Trip</div>
           </div>
         </div>
       ))}
     </div>
-  );
+  )
 }
+

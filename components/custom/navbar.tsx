@@ -1,21 +1,16 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from "next/image"
+import Link from "next/link"
 
-import { auth, signOut } from "@/app/(auth)/auth";
+import { auth, signOut } from "@/app/(auth)/auth"
 
-import { History } from "./history";
-import { SlashIcon } from "./icons";
-import { ThemeToggle } from "./theme-toggle";
-import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+import { History } from "./history"
+import { SlashIcon } from "./icons"
+import { ThemeToggle } from "./theme-toggle"
+import { Button } from "../ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
 export const Navbar = async () => {
-  let session = await auth();
+  const session = await auth()
 
   return (
     <>
@@ -23,28 +18,18 @@ export const Navbar = async () => {
         <div className="flex flex-row gap-3 items-center">
           <History user={session?.user} />
           <div className="flex flex-row gap-2 items-center">
-            <Image
-              src="/images/ai.png"
-              height={20}
-              width={20}
-              alt="sorvx logo"
-            />
+            <Image src="/images/ai.png" height={20} width={20} alt="sorvx logo" />
             <div className="text-zinc-500">
               <SlashIcon size={16} />
             </div>
-            <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit">
-              Sorvx AI
-            </div>
+            <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit">Sorvx AI</div>
           </div>
         </div>
 
         {session ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="py-1.5 px-2 h-fit font-normal"
-                variant="secondary"
-              >
+              <Button className="py-1.5 px-2 h-fit font-normal" variant="secondary">
                 {session.user?.email}
               </Button>
             </DropdownMenuTrigger>
@@ -56,17 +41,14 @@ export const Navbar = async () => {
                 <form
                   className="w-full"
                   action={async () => {
-                    "use server";
+                    "use server"
 
                     await signOut({
                       redirectTo: "/",
-                    });
+                    })
                   }}
                 >
-                  <button
-                    type="submit"
-                    className="w-full text-left px-1 py-0.5 text-red-500"
-                  >
+                  <button type="submit" className="w-full text-left px-1 py-0.5 text-red-500">
                     Sign out
                   </button>
                 </form>
@@ -80,5 +62,6 @@ export const Navbar = async () => {
         )}
       </div>
     </>
-  );
-};
+  )
+}
+

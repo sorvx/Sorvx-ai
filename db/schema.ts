@@ -1,21 +1,16 @@
-import { Message } from "ai";
-import { InferSelectModel } from "drizzle-orm";
-import {
-  pgTable,
-  varchar,
-  timestamp,
-  json,
-  uuid,
-  boolean,
-} from "drizzle-orm/pg-core";
+import type { Message } from "ai"
+import type { InferSelectModel } from "drizzle-orm"
+import { pgTable, varchar, timestamp, json, uuid, boolean } from "drizzle-orm/pg-core"
 
 export const user = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
   password: varchar("password", { length: 64 }),
-});
+  resetToken: varchar("resetToken", { length: 64 }),
+  resetTokenExpiry: timestamp("resetTokenExpiry"),
+})
 
-export type User = InferSelectModel<typeof user>;
+export type User = InferSelectModel<typeof user>
 
 export const chat = pgTable("Chat", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -24,11 +19,11 @@ export const chat = pgTable("Chat", {
   userId: uuid("userId")
     .notNull()
     .references(() => user.id),
-});
+})
 
 export type Chat = Omit<InferSelectModel<typeof chat>, "messages"> & {
-  messages: Array<Message>;
-};
+  messages: Array<Message>
+}
 
 export const reservation = pgTable("Reservation", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -38,6 +33,7 @@ export const reservation = pgTable("Reservation", {
   userId: uuid("userId")
     .notNull()
     .references(() => user.id),
-});
+})
 
-export type Reservation = InferSelectModel<typeof reservation>;
+export type Reservation = InferSelectModel<typeof reservation>
+

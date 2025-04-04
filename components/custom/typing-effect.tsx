@@ -1,96 +1,91 @@
-"use client";
+"use client"
 
-import { motion, usePresence } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
-import { Markdown } from "./markdown";
+import { motion, usePresence } from "framer-motion"
+import { useEffect, useState, useRef } from "react"
+import { Markdown } from "./markdown"
 
 interface TypingEffectProps {
-  text: string;
-  messageId: string;
-  chatId: string;
-  className?: string;
-  speed?: number;
-  isStreaming?: boolean;
+  text: string
+  messageId: string
+  chatId: string
+  className?: string
+  speed?: number
+  isStreaming?: boolean
 }
 
-export function TypingEffect({ 
-  text, 
-  messageId, 
-  chatId, 
-  className = "", 
+export function TypingEffect({
+  text,
+  messageId,
+  chatId,
+  className = "",
   speed = 30,
-  isStreaming = false 
+  isStreaming = false,
 }: TypingEffectProps) {
-  const [displayedText, setDisplayedText] = useState("");
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isPresent, safeToRemove] = usePresence();
-  const previousTextRef = useRef("");
-  const animationTimeoutRef = useRef<NodeJS.Timeout>();
-  
+  const [displayedText, setDisplayedText] = useState("")
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isPresent, safeToRemove] = usePresence()
+  const previousTextRef = useRef("")
+  const animationTimeoutRef = useRef<NodeJS.Timeout>()
+
   useEffect(() => {
     if (!isPresent) {
-      safeToRemove();
-      return;
+      safeToRemove()
+      return
     }
 
     // Clear any existing animation timeout
     if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current);
+      clearTimeout(animationTimeoutRef.current)
     }
 
     // Handle streaming updates
     if (isStreaming) {
-      setDisplayedText(text);
-      return;
+      setDisplayedText(text)
+      return
     }
 
     // Check if message was previously animated
-    const allAnimatedChats = JSON.parse(localStorage.getItem('animatedChats') || '{}');
-    const animatedMessages = allAnimatedChats[chatId] || {};
+    const allAnimatedChats = JSON.parse(localStorage.getItem("animatedChats") || "{}")
+    const animatedMessages = allAnimatedChats[chatId] || {}
 
     if (animatedMessages[messageId]) {
-      setDisplayedText(text);
-      return;
+      setDisplayedText(text)
+      return
     }
 
     // Animate new messages
-    setIsAnimating(true);
-    let currentIndex = 0;
-    const fullText = text;
+    setIsAnimating(true)
+    let currentIndex = 0
+    const fullText = text
 
     const animateText = () => {
       if (currentIndex <= fullText.length) {
-        setDisplayedText(fullText.slice(0, currentIndex));
-        currentIndex++;
-        
-        animationTimeoutRef.current = setTimeout(animateText, speed);
+        setDisplayedText(fullText.slice(0, currentIndex))
+        currentIndex++
+
+        animationTimeoutRef.current = setTimeout(animateText, speed)
       } else {
-        setIsAnimating(false);
+        setIsAnimating(false)
         // Mark message as animated
         allAnimatedChats[chatId] = {
           ...animatedMessages,
-          [messageId]: true
-        };
-        localStorage.setItem('animatedChats', JSON.stringify(allAnimatedChats));
+          [messageId]: true,
+        }
+        localStorage.setItem("animatedChats", JSON.stringify(allAnimatedChats))
       }
-    };
+    }
 
-    animateText();
+    animateText()
 
     return () => {
       if (animationTimeoutRef.current) {
-        clearTimeout(animationTimeoutRef.current);
+        clearTimeout(animationTimeoutRef.current)
       }
-    };
-  }, [text, speed, isPresent, safeToRemove, messageId, chatId, isStreaming]);
+    }
+  }, [text, speed, isPresent, safeToRemove, messageId, chatId, isStreaming])
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className={className}
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={className}>
       <div className="prose dark:prose-invert max-w-none">
         <Markdown>{displayedText || " "}</Markdown>
       </div>
@@ -98,10 +93,11 @@ export function TypingEffect({
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 0.8, repeat: Infinity }}
+          transition={{ duration: 0.8, repeat: Number.POSITIVE_INFINITY }}
           className="inline-block w-0.5 h-4 ml-0.5 bg-current"
         />
       )}
     </motion.div>
-  );
-} 
+  )
+}
+

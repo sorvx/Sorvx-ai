@@ -1,6 +1,6 @@
-import { differenceInHours, format } from "date-fns";
+import { differenceInHours, format } from "date-fns"
 
-import { ArrowUpRightSmallIcon } from "../custom/icons";
+import { ArrowUpRightSmallIcon } from "../custom/icons"
 
 const SAMPLE = {
   flightNumber: "BA142",
@@ -21,7 +21,7 @@ const SAMPLE = {
     gate: "B22",
   },
   totalDistanceInMiles: 3450,
-};
+}
 
 export function Row({ row = SAMPLE.arrival, type = "arrival" }) {
   return (
@@ -38,31 +38,23 @@ export function Row({ row = SAMPLE.arrival, type = "arrival" }) {
                 <ArrowUpRightSmallIcon size={16} />
               )}
             </div>
-            <div className="text-sm sm:text-base text-muted-foreground">
-              {row.airportCode}
-            </div>
+            <div className="text-sm sm:text-base text-muted-foreground">{row.airportCode}</div>
             <div>·</div>
             <div className="text-sm sm:text-base truncate max-w-32 sm:max-w-64 text-muted-foreground">
               {row.airportName}
             </div>
           </div>
 
-          <div className="text-2xl sm:text-3xl font-medium">
-            {format(new Date(row.timestamp), "h:mm a")}
-          </div>
+          <div className="text-2xl sm:text-3xl font-medium">{format(new Date(row.timestamp), "h:mm a")}</div>
         </div>
       </div>
 
       <div className="flex flex-col gap-1 items-end justify-center mt-auto">
-        <div className="text-sm sm:text-sm bg-amber-400 rounded-md w-fit px-2 text-amber-900">
-          {row.gate}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Terminal {row.terminal}
-        </div>
+        <div className="text-sm sm:text-sm bg-amber-400 rounded-md w-fit px-2 text-amber-900">{row.gate}</div>
+        <div className="text-sm text-muted-foreground">Terminal {row.terminal}</div>
       </div>
     </div>
-  );
+  )
 }
 
 export function FlightStatus({ flightStatus = SAMPLE }) {
@@ -81,20 +73,16 @@ export function FlightStatus({ flightStatus = SAMPLE }) {
 
       <div className="flex flex-row gap-2 items-center">
         <div className="text-xs text-muted-foreground ">
-          {differenceInHours(
-            new Date(flightStatus.arrival.timestamp),
-            new Date(flightStatus.departure.timestamp),
-          )}{" "}
+          {differenceInHours(new Date(flightStatus.arrival.timestamp), new Date(flightStatus.departure.timestamp))}{" "}
           hours
         </div>
         <div>·</div>
-        <div className="text-xs text-muted-foreground">
-          {flightStatus.totalDistanceInMiles} mi
-        </div>
+        <div className="text-xs text-muted-foreground">{flightStatus.totalDistanceInMiles} mi</div>
         <div className="h-px grow bg-muted-foreground/20 ml-2" />
       </div>
 
       <Row row={flightStatus.departure} type="arrival" />
     </div>
-  );
+  )
 }
+

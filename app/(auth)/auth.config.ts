@@ -1,4 +1,4 @@
-import { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig } from "next-auth"
 
 export const authConfig = {
   pages: {
@@ -11,29 +11,32 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      let isLoggedIn = !!auth?.user;
-      let isOnChat = nextUrl.pathname.startsWith("/");
-      let isOnRegister = nextUrl.pathname.startsWith("/register");
-      let isOnLogin = nextUrl.pathname.startsWith("/login");
+      const isLoggedIn = !!auth?.user
+      const isOnChat = nextUrl.pathname.startsWith("/")
+      const isOnRegister = nextUrl.pathname.startsWith("/register")
+      const isOnLogin = nextUrl.pathname.startsWith("/login")
+      const isOnForgotPassword = nextUrl.pathname.startsWith("/forgot-password")
+      const isOnResetPassword = nextUrl.pathname.startsWith("/reset-password")
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL("/", nextUrl));
+      if (isLoggedIn && (isOnLogin || isOnRegister || isOnForgotPassword || isOnResetPassword)) {
+        return Response.redirect(new URL("/", nextUrl))
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      if (isOnRegister || isOnLogin || isOnForgotPassword || isOnResetPassword) {
+        return true // Always allow access to auth pages
       }
 
       if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        if (isLoggedIn) return true
+        return false // Redirect unauthenticated users to login page
       }
 
       if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
+        return Response.redirect(new URL("/", nextUrl))
       }
 
-      return true;
+      return true
     },
   },
-} satisfies NextAuthConfig;
+} satisfies NextAuthConfig
+

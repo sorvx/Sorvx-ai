@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
-import { User } from "next-auth";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import useSWR from "swr";
-import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Plus, Trash2, MessageSquare, Loader2, X } from 'lucide-react';
+import Link from "next/link"
+import { useParams, usePathname } from "next/navigation"
+import type { User } from "next-auth"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import useSWR from "swr"
+import { motion, AnimatePresence } from "framer-motion"
+import { Clock, Plus, Trash2, MessageSquare, Loader2, X } from "lucide-react"
 
-import { Chat } from "@/db/schema";
-import { fetcher, cn } from "@/lib/utils";
+import type { Chat } from "@/db/schema"
+import { fetcher, cn } from "@/lib/utils"
 
 import {
   AlertDialog,
@@ -21,86 +21,79 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { Button } from "../ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "../ui/sheet";
+} from "../ui/alert-dialog"
+import { Button } from "../ui/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "../ui/sheet"
 
 export const History = ({ user }: { user: User | undefined }) => {
-  const { id } = useParams();
-  const pathname = usePathname();
+  const { id } = useParams()
+  const pathname = usePathname()
   const {
     data: history,
     isLoading,
     mutate,
   } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
     fallbackData: [],
-  });
+  })
 
   useEffect(() => {
-    mutate();
-  }, [pathname, mutate]);
+    mutate()
+  }, [pathname, mutate])
 
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleDelete = async () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
       method: "DELETE",
-    });
+    })
 
     toast.promise(deletePromise, {
       loading: "Deleting chat...",
       success: () => {
         mutate((history) => {
           if (history) {
-            return history.filter((h) => h.id !== deleteId);
+            return history.filter((h) => h.id !== deleteId)
           }
-          return history;
-        });
-        return "Chat deleted successfully";
+          return history
+        })
+        return "Chat deleted successfully"
       },
       error: "Failed to delete chat",
-    });
+    })
 
-    setShowDeleteDialog(false);
-  };
+    setShowDeleteDialog(false)
+  }
 
   // Format chat title for display
   const formatChatTitle = (chat: Chat) => {
     if (typeof chat.messages[0]?.content === "object" && chat.messages[0]?.content !== null) {
-      return (chat.messages[0]?.content as { fileName?: string })?.fileName || "File upload";
+      return (chat.messages[0]?.content as { fileName?: string })?.fileName || "File upload"
     } else if (typeof chat.messages[0]?.content === "string") {
-      const content = chat.messages[0]?.content;
+      const content = chat.messages[0]?.content
       // Truncate and add ellipsis if needed
-      return content.length > 28 ? `${content.slice(0, 28)}...` : content;
+      return content.length > 28 ? `${content.slice(0, 28)}...` : content
     }
-    return "New conversation";
-  };
+    return "New conversation"
+  }
 
   // Get relative time for chat
   const getRelativeTime = (timestamp: Date) => {
-    const now = new Date();
-    const chatDate = new Date(timestamp);
-    const diffInDays = Math.floor((now.getTime() - chatDate.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const now = new Date()
+    const chatDate = new Date(timestamp)
+    const diffInDays = Math.floor((now.getTime() - chatDate.getTime()) / (1000 * 60 * 60 * 24))
+
     if (diffInDays === 0) {
-      return "Today";
+      return "Today"
     } else if (diffInDays === 1) {
-      return "Yesterday";
+      return "Yesterday"
     } else if (diffInDays < 7) {
-      return `${diffInDays} days ago`;
+      return `${diffInDays} days ago`
     } else {
-      return chatDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      return chatDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })
     }
-  };
+  }
 
   return (
     <>
@@ -115,7 +108,7 @@ export const History = ({ user }: { user: User | undefined }) => {
             <Clock className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </Button>
         </SheetTrigger>
-        
+
         <SheetContent
           side="left"
           className="w-[320px] sm:w-[380px] p-0 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-800"
@@ -125,12 +118,12 @@ export const History = ({ user }: { user: User | undefined }) => {
               <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               Chat History
             </SheetTitle>
-            
+
             {/* Close button with X icon */}
             <SheetClose asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="h-8 w-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
                 aria-label="Close history panel"
               >
@@ -138,7 +131,7 @@ export const History = ({ user }: { user: User | undefined }) => {
               </Button>
             </SheetClose>
           </SheetHeader>
-          
+
           <div className="flex flex-col h-[calc(100vh-65px)] overflow-hidden">
             <div className="p-4">
               {/* New Chat Button */}
@@ -152,7 +145,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                 </Button>
               </Link>
             </div>
-            
+
             {/* Chat History List */}
             <div className="flex-1 overflow-y-auto px-4 pb-6">
               {isLoading ? (
@@ -164,25 +157,21 @@ export const History = ({ user }: { user: User | undefined }) => {
                 <AnimatePresence initial={false}>
                   <div className="space-y-1">
                     {history.map((chat) => (
-                      <motion.div 
-                        key={chat.id} 
+                      <motion.div
+                        key={chat.id}
                         className="group relative"
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <Link 
-                          href={`/chat/${chat.id}`} 
-                          className="block" 
-                          onClick={() => setIsOpen(false)}
-                        >
+                        <Link href={`/chat/${chat.id}`} className="block" onClick={() => setIsOpen(false)}>
                           <div
                             className={cn(
                               "w-full text-left flex flex-col rounded-lg p-3 transition-all",
-                              chat.id === id 
-                                ? "bg-violet-50 dark:bg-violet-900/20 border-l-2 border-violet-500 dark:border-violet-400" 
-                                : "hover:bg-gray-50 dark:hover:bg-gray-800/50 border-l-2 border-transparent"
+                              chat.id === id
+                                ? "bg-violet-50 dark:bg-violet-900/20 border-l-2 border-violet-500 dark:border-violet-400"
+                                : "hover:bg-gray-50 dark:hover:bg-gray-800/50 border-l-2 border-transparent",
                             )}
                           >
                             <div className="flex items-start justify-between">
@@ -196,7 +185,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                               </div>
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                              {chat.messages.length} message{chat.messages.length !== 1 ? 's' : ''}
+                              {chat.messages.length} message{chat.messages.length !== 1 ? "s" : ""}
                             </div>
                           </div>
                         </Link>
@@ -205,9 +194,9 @@ export const History = ({ user }: { user: User | undefined }) => {
                           size="icon"
                           className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 rounded-full"
                           onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteId(chat.id);
-                            setShowDeleteDialog(true);
+                            e.stopPropagation()
+                            setDeleteId(chat.id)
+                            setShowDeleteDialog(true)
                           }}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -238,7 +227,8 @@ export const History = ({ user }: { user: User | undefined }) => {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl">Delete Conversation</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
-              Are you sure you want to delete this conversation? This action cannot be undone and all messages will be permanently removed.
+              Are you sure you want to delete this conversation? This action cannot be undone and all messages will be
+              permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
@@ -255,5 +245,6 @@ export const History = ({ user }: { user: User | undefined }) => {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
-};
+  )
+}
+

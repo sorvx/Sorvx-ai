@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+"use client"
+
+import { motion } from "framer-motion"
 
 export function TypingDots() {
   return (
@@ -10,11 +12,12 @@ export function TypingDots() {
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{
             duration: 1,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             delay: dot * 0.15,
           }}
         />
       ))}
     </div>
-  );
+  )
 }
+

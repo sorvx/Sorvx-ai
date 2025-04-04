@@ -1,72 +1,65 @@
-import Link from "next/link";
-import React, { memo, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+"use client"
 
-const CodeBlock = ({
-  node,
-  inline,
-  className,
-  children,
-  ...props
-}: any) => {
-  const match = /language-(\w+)/.exec(className || "");
-  const [copied, setCopied] = useState(false);
+import Link from "next/link"
+import { memo, useState } from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+
+const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+  const match = /language-(\w+)/.exec(className || "")
+  const [copied, setCopied] = useState(false)
 
   const copyToClipboard = () => {
-    const codeText = Array.isArray(children) ? children.join("") : children;
+    const codeText = Array.isArray(children) ? children.join("") : children
 
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard
         .writeText(codeText)
         .then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
         })
         .catch((err) => {
-          console.error("Clipboard API failed, falling back to execCommand", err);
-          fallbackCopyText(codeText);
-        });
+          console.error("Clipboard API failed, falling back to execCommand", err)
+          fallbackCopyText(codeText)
+        })
     } else {
-      fallbackCopyText(codeText);
+      fallbackCopyText(codeText)
     }
-  };
+  }
 
   const fallbackCopyText = (text: string) => {
-    const scrollPosition = { top: window.scrollY, left: window.scrollX };
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+    const scrollPosition = { top: window.scrollY, left: window.scrollX }
+    const textArea = document.createElement("textarea")
+    textArea.value = text
+    textArea.style.top = "0"
+    textArea.style.left = "0"
+    textArea.style.position = "fixed"
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
 
     try {
-      const successful = document.execCommand("copy");
+      const successful = document.execCommand("copy")
       if (successful) {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
       } else {
-        console.error("Fallback: Copy command was unsuccessful");
+        console.error("Fallback: Copy command was unsuccessful")
       }
     } catch (err) {
-      console.error("Fallback: Oops, unable to copy", err);
+      console.error("Fallback: Oops, unable to copy", err)
     }
-    document.body.removeChild(textArea);
-    window.scrollTo(scrollPosition.left, scrollPosition.top);
-  };
+    document.body.removeChild(textArea)
+    window.scrollTo(scrollPosition.left, scrollPosition.top)
+  }
 
   if (inline || !match) {
     return (
-      <code
-        className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
-        {...props}
-      >
+      <code className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`} {...props}>
         {children}
       </code>
-    );
+    )
   }
 
   return (
@@ -83,15 +76,12 @@ const CodeBlock = ({
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre
-        {...props}
-        className="overflow-x-auto p-3 bg-gray-50 dark:bg-gray-900 text-sm font-mono"
-      >
+      <pre {...props} className="overflow-x-auto p-3 bg-gray-50 dark:bg-gray-900 text-sm font-mono">
         <code className={match[1]}>{children}</code>
       </pre>
     </div>
-  );
-};
+  )
+}
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   const components = {
@@ -117,12 +107,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
       </strong>
     ),
     a: ({ node, children, ...props }: any) => (
-      <Link
-        className="text-blue-500 hover:underline"
-        target="_blank"
-        rel="noreferrer"
-        {...props}
-      >
+      <Link className="text-blue-500 hover:underline" target="_blank" rel="noreferrer" {...props}>
         {children}
       </Link>
     ),
@@ -164,20 +149,16 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         {children}
       </td>
     ),
-    hr: ({ node, ...props }: any) => (
-      <hr className="my-4 border-gray-300 dark:border-gray-600" {...props} />
-    ),
+    hr: ({ node, ...props }: any) => <hr className="my-4 border-gray-300 dark:border-gray-600" {...props} />,
     // Optionally, add more custom renderers as needed.
-  };
+  }
 
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
       {children}
     </ReactMarkdown>
-  );
-};
+  )
+}
 
-export const Markdown = memo(
-  NonMemoizedMarkdown,
-  (prevProps, nextProps) => prevProps.children === nextProps.children
-);
+export const Markdown = memo(NonMemoizedMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children)
+
