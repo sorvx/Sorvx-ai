@@ -14,7 +14,7 @@ import { deleteChatById, getChatById, saveChat } from "@/db/queries"
 
 
 export async function GET(request: Request) {
-  return new Response("Method GET not allowed", { status: 405 });
+  return new Response("GET method is not supported on this endpoint", { status: 405 });
 }
 
 
