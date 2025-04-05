@@ -1,6 +1,4 @@
-import { handlers } from "@/app/(auth)/auth"
+import { GET, POST } from "@/app/(auth)/auth"
 
-// Export the GET and POST handlers for the NextAuth API route
-export const GET = handlers.GET
-export const POST = handlers.POST
+export { GET, POST }
 
