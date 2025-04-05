@@ -1,5 +1,5 @@
-import { auth } from "@/app/(auth)/auth"
+import NextAuth from "next-auth";
+import { authConfig } from "@/app/(auth)/auth.config";
 
-export const GET = auth
-export const POST = auth
-
+const handler = NextAuth(authConfig);
+export { handler as GET, handler as POST };
