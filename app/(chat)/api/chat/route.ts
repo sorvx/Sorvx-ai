@@ -13,6 +13,7 @@ import {
 import { auth } from "@/app/(auth)/auth"
 import { deleteChatById, getChatById, saveChat } from "@/db/queries"
 
+// Define export for GET method
 export async function GET() {
   return NextResponse.json(
     { error: "GET method is not supported on this endpoint" },
@@ -157,7 +158,7 @@ export async function DELETE(request: Request) {
   try {
     const chat = await getChatById({ id })
 
-    if (chat.userId !== session.user.id) {
+    if (!chat || (chat.userId !== session.user.id)) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
