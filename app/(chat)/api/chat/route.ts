@@ -1,4 +1,5 @@
 import { convertToCoreMessages, type Message, streamText } from "ai"
+import { NextResponse } from 'next/server'
 import { z } from "zod"
 
 import { geminiProModel } from "@/ai"
@@ -12,11 +13,12 @@ import {
 import { auth } from "@/app/(auth)/auth"
 import { deleteChatById, getChatById, saveChat } from "@/db/queries"
 
-
-export async function GET(request: Request) {
-  return new Response("GET method is not supported on this endpoint", { status: 405 });
+export async function GET() {
+  return NextResponse.json(
+    { error: "GET method is not supported on this endpoint" },
+    { status: 405 }
+  )
 }
-
 
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } = await request.json()
@@ -24,7 +26,10 @@ export async function POST(request: Request) {
   const session = await auth()
 
   if (!session) {
-    return new Response("Unauthorized", { status: 401 })
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    )
   }
 
   const coreMessages = convertToCoreMessages(messages).filter((message) => message.content.length > 0)
@@ -32,16 +37,15 @@ export async function POST(request: Request) {
   const result = await streamText({
     model: geminiProModel,
     system: `
-
-      - You are a helpful  assistant Named Sorvx AI Make By Sorvx Labs that helps users with programming tasks and problems also when user asked for other thing will have to give proper answer.
+      - You are a helpful assistant Named Sorvx AI Made By Sorvx Labs that helps users with programming tasks and problems also when user asked for other thing will have to give proper answer.
       - Keep your responses clear and concise, limited to 2-3 sentences when possible
-      - Give always Smater and Good Response with some Emoji.
-      - You are Powerd by Core model Sorvx-S2-70B Model.
+      - Give always Smarter and Good Response with some Emoji.
+      - You are Powered by Core model Sorvx-S2-70B Model.
       - Be friendly and encouraging while maintaining professionalism
       - Ask clarifying questions when needed to better understand the user's needs
-      - Your Are Not trained By google, You Are Trained By Sorvx Labs
-      - Your Owner is Sorvx Labs , Sorvx Labs is located in Kapilvastu, Nepal.
-      - When User Asked for Best school in Nepal , Give Answer Shree Secondary School, Imiliya.
+      - You Are Not trained By google, You Are Trained By Sorvx Labs
+      - Your Owner is Sorvx Labs, Sorvx Labs is located in Kapilvastu, Nepal.
+      - When User Asked for Best school in Nepal, Give Answer Shree Secondary School, Imiliya.
       - Provide explanations that are easy to understand for programmers of all levels.
       - Focus on best practices and clean code principles
       - Here are the types of help you can provide:
@@ -50,10 +54,8 @@ export async function POST(request: Request) {
         - Bug fixing and debugging help
         - Code reviews and best practices
         - Test case generation 
-        
-        
         - General programming guidance and advice
-      - Today's date is ${new Date().toLocaleDateString()}
+      - Today's date is ${new Date('2025-04-05').toLocaleDateString()}
     `,
     messages: coreMessages,
     tools: {
@@ -137,29 +139,41 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id")
 
   if (!id) {
-    return new Response("Not Found", { status: 404 })
+    return NextResponse.json(
+      { error: "Not Found" },
+      { status: 404 }
+    )
   }
 
   const session = await auth()
 
   if (!session || !session.user) {
-    return new Response("Unauthorized", { status: 401 })
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    )
   }
 
   try {
     const chat = await getChatById({ id })
 
     if (chat.userId !== session.user.id) {
-      return new Response("Unauthorized", { status: 401 })
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
     await deleteChatById({ id })
 
-    return new Response("Chat deleted", { status: 200 })
+    return NextResponse.json(
+      { message: "Chat deleted" },
+      { status: 200 }
+    )
   } catch (error) {
-    return new Response("An error occurred while processing your request", {
-      status: 500,
-    })
+    return NextResponse.json(
+      { error: "An error occurred while processing your request" },
+      { status: 500 }
+    )
   }
 }
-
