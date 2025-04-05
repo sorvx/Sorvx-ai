@@ -1,4 +1,5 @@
-import { GET, POST } from "@/app/(auth)/auth.ts"
+import { auth } from "@/app/(auth)/auth"
 
-export { GET, POST }
+export const GET = auth
+export const POST = auth
 
