@@ -12,6 +12,12 @@ import {
 import { auth } from "@/app/(auth)/auth"
 import { deleteChatById, getChatById, saveChat } from "@/db/queries"
 
+
+export async function GET(request: Request) {
+  return new Response("Method GET not allowed", { status: 405 });
+}
+
+
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } = await request.json()
 
